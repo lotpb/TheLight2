@@ -8,7 +8,9 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
+import FirebaseStorage
+import FirebaseAuth
 import MapKit
 import CoreLocation
 import GeoFire
@@ -27,17 +29,23 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
     
     let defaults = UserDefaults.standard
     
-    @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var containView: UIView!
     @IBOutlet weak var mainView: UIView!
+    @IBOutlet weak var mapContainerView: UIView!
+    
+    @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var userimageView: UIImageView?
     
     @IBOutlet weak var usernameField : UITextField?
     @IBOutlet weak var emailField : UITextField?
     @IBOutlet weak var phoneField : UITextField?
     
-    @IBOutlet weak var mapLabel: UILabel!
+    @IBOutlet weak var infoLabel: UILabel!
     @IBOutlet weak var createLabel: UILabel?
+    @IBOutlet weak var phoneLabel: UILabel!
+    @IBOutlet weak var emailLabel: UILabel!
+    @IBOutlet weak var userLabel: UILabel!
+    @IBOutlet weak var mapLabel: UILabel!
 
     var status : String?
     var objectId : String?
@@ -54,7 +62,7 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
     var pictureData : Data?
     
     var imagePicker: UIImagePickerController!
-    var activityIndicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.gray)
+    var activityIndicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style .medium)
  
     var emailTitle :NSString?
     var messageBody:NSString?
@@ -62,7 +70,7 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
     lazy var editProfileBtn: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Change Profile Photo", for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
         //button.addTarget(self, action: #selector(UserProfileController.EditProfileButton), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -105,6 +113,7 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.extendedLayoutIncludesOpaqueBars = true
         setupNavigationButtons()
         
         emailTitle = defaults.string(forKey: "emailtitleKey")! as NSString
@@ -120,7 +129,7 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
         setupBorder()
         setupFonts()
         setupConstraints()
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight - User Profile"
         } else {
             navigationItem.title = "User Profile"
@@ -164,8 +173,19 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
     
     func setupForm() {
         
-        self.view.backgroundColor = .white //Color.LGrayColor
-        self.mainView?.backgroundColor = UIColor(white:0.99, alpha:1.0)
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = .systemBackground
+            mainView?.backgroundColor = .systemBackground
+            mapContainerView?.backgroundColor = .systemBackground
+            infoLabel.textColor = .systemBlue
+            createLabel?.textColor = .label
+            phoneLabel.textColor = .systemBlue
+            emailLabel?.textColor = .systemBlue
+            userLabel.textColor = .systemBlue
+            mapLabel?.textColor = .label
+        } else {
+            // Fallback on earlier versions
+        }
         
         if status == "Edit" {
             self.usernameField?.text = self.username
@@ -241,7 +261,7 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
     
     func setupFonts() {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.usernameField!.font = Font.celltitle20l
             self.emailField!.font = Font.celltitle20l
             self.phoneField!.font = Font.celltitle20l
@@ -253,6 +273,10 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
             self.phoneField!.font = Font.celltitle18l
             self.createLabel!.font = Font.celltitle14l
             self.mapLabel!.font = Font.celltitle20l
+            self.infoLabel.font = Font.celltitle14l
+            self.phoneLabel.font = Font.celltitle14l
+            self.emailLabel?.font = Font.celltitle14l
+            self.userLabel.font = Font.celltitle14l
         }
     }
     
@@ -277,7 +301,7 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
         containView.addSubview(emailBtn)
         
         let stackView = UIStackView(arrangedSubviews: [updateBtn, callBtn, emailBtn])
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             stackView.spacing = 15
             containView.translatesAutoresizingMaskIntoConstraints = false
             containView.heightAnchor.constraint(equalToConstant: 800).isActive = true
@@ -336,7 +360,7 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
     @IBAction func callPhone(_ sender: AnyObject) {
         
         let phoneNo : String?
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             
             phoneNo = self.phoneField!.text
             if let phoneCallURL:URL = URL(string:"telprompt:\(phoneNo!)") {
@@ -396,7 +420,7 @@ class UserDetailController: UIViewController, UINavigationControllerDelegate, UI
             if self.usernameField!.text! == self.user?.username {
                 
                 pictureData = self.userimageView?.image?.jpegData(compressionQuality: 0.9)
-                let file = PFFile(name: "img", data: pictureData!)
+                let file = PFFileObject(name: "img", data: pictureData!)
                 
                 file!.saveInBackground { (success: Bool, error: Error?) in
                     if success {

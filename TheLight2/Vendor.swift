@@ -8,7 +8,7 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 
 class Vendor: UIViewController {
 
@@ -33,7 +33,7 @@ class Vendor: UIViewController {
     
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
-        refreshControl.backgroundColor = Color.Vend.navColor
+        refreshControl.backgroundColor = .clear //Color.Vend.navColor
         refreshControl.tintColor = .white
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh", attributes: attributes)
@@ -45,7 +45,6 @@ class Vendor: UIViewController {
         super.viewDidLoad()
         self.extendedLayoutIncludesOpaqueBars = true
         setupNavigation()
-        setupSearch()
         setupTableView()
         
         self.tableView!.addSubview(self.refreshControl)
@@ -78,34 +77,30 @@ class Vendor: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    private func setupSearch() {
-        searchController = UISearchController(searchResultsController: resultsController)
-        if let textfield = searchController.searchBar.value(forKey: "searchField") as? UITextField {
-            if let backgroundview = textfield.subviews.first {
-                backgroundview.backgroundColor = UIColor.white
-                backgroundview.layer.cornerRadius = 10;
-                backgroundview.clipsToBounds = true;
-            }
-        }
-        searchController.searchBar.scopeButtonTitles = searchScope
-        searchController.searchResultsUpdater = self
-        self.definesPresentationContext = true
-        
-        if #available(iOS 11.0, *) {
-            self.navigationItem.searchController = searchController
-            navigationItem.hidesSearchBarWhenScrolling = false
-        } else {
-            tableView?.tableHeaderView = searchController.searchBar
-        }
-    }
-    
     private func setupNavigation() {
         
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newData))
         navigationItem.title = "Vendors"
-        self.navigationItem.largeTitleDisplayMode = .always
+        //self.navigationItem.largeTitleDisplayMode = .always
         
-        let addBtn = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newData))
-        navigationItem.rightBarButtonItems = [addBtn]
+        searchController = UISearchController(searchResultsController: resultsController)
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.scopeButtonTitles = searchScope
+        searchController.searchBar.sizeToFit()
+        searchController.obscuresBackgroundDuringPresentation = false
+        
+        if let textfield = searchController.searchBar.value(forKey: "searchField") as? UITextField {
+            if let backgroundview = textfield.subviews.first {
+                backgroundview.backgroundColor = .white
+                backgroundview.layer.cornerRadius = 10
+                backgroundview.clipsToBounds = true
+            }
+        }
+        
+        self.definesPresentationContext = true
     }
     
     func setupTableView() {
@@ -116,21 +111,26 @@ class Vendor: UIViewController {
         self.tableView!.dataSource = self
         self.tableView!.sizeToFit()
         self.tableView!.clipsToBounds = true
-        self.tableView!.backgroundColor = Color.LGrayColor
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            // Fallback on earlier versions
+            self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        }
         self.tableView!.tableFooterView = UIView(frame: .zero)
         
         resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
         resultsController.tableView.backgroundColor = Color.LGrayColor
-        resultsController.tableView.tableFooterView = UIView(frame: .zero)
         resultsController.tableView.sizeToFit()
         resultsController.tableView.clipsToBounds = true
         resultsController.tableView.dataSource = self
         resultsController.tableView.delegate = self
+        resultsController.tableView.tableFooterView = UIView(frame: .zero)
     }
     
     // MARK: - NavigationController Hidden
     @objc func hideBar(notification: NSNotification)  {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {
@@ -206,7 +206,7 @@ class Vendor: UIViewController {
                     self.vendlist.append(post)
                     
                     self.vendlist.sort(by: { (p1, p2) -> Bool in
-                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                        return p1.vendor.compare(p2.vendor) == .orderedAscending
                     })
                     
                     DispatchQueue.main.async(execute: {
@@ -486,9 +486,9 @@ extension Vendor: UITableViewDataSource {
             cellIdentifier = "Cell"
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! TableViewCell
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 
-                cell.vendtitleLabel!.font = Font.celltitle22m
+                cell.vendtitleLabel!.font = Font.celltitle20m
                 cell.vendsubtitleLabel!.font = Font.celltitle16r
                 cell.vendlikeLabel.font = Font.celltitle16r
                 
@@ -500,7 +500,12 @@ extension Vendor: UITableViewDataSource {
             }
             
             cell.selectionStyle = .none
-            cell.vendsubtitleLabel!.textColor = .gray
+            if #available(iOS 13.0, *) {
+                cell.vendtitleLabel.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
+            cell.vendsubtitleLabel!.textColor = .systemGray
             cell.vendreplyButton.tintColor = .lightGray
             cell.vendreplyButton.setImage(#imageLiteral(resourceName: "Commentfilled").withRenderingMode(.alwaysTemplate), for: .normal)
             cell.vendreplyLabel.text! = ""
@@ -567,7 +572,7 @@ extension Vendor: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
         if (tableView == self.tableView) {
-            if UI_USER_INTERFACE_IDIOM() == .phone {
+            if UIDevice.current.userInterfaceIdiom == .phone  {
                 return 85.0
             } else {
                 return CGFloat.leastNormalMagnitude

@@ -32,8 +32,6 @@ class MenuItemCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-//        backgroundColor = .orange
-        
         let stackView = UIStackView(arrangedSubviews: [iconImageView, titleLabel, UIView()])
         addSubview(stackView)
         stackView.translatesAutoresizingMaskIntoConstraints = false

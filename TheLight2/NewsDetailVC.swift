@@ -8,13 +8,15 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 import AVFoundation
 
 
 class NewsDetailVC: UIViewController, UITextViewDelegate, UIScrollViewDelegate, UISplitViewControllerDelegate {
     
+    
     @IBOutlet weak var scrollView: UIScrollView!
+    @IBOutlet weak var contentView: UIView!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var detailLabel: UILabel!
     @IBOutlet weak var newsTextview: UITextView!
@@ -96,7 +98,7 @@ class NewsDetailVC: UIViewController, UITextViewDelegate, UIScrollViewDelegate, 
     }
     
     var activityIndicator: UIActivityIndicatorView = {
-        let aiv = UIActivityIndicatorView(style: .whiteLarge)
+        let aiv = UIActivityIndicatorView(style: .medium)
         aiv.translatesAutoresizingMaskIntoConstraints = false
         aiv.hidesWhenStopped = true
         return aiv
@@ -105,6 +107,7 @@ class NewsDetailVC: UIViewController, UITextViewDelegate, UIScrollViewDelegate, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        newsTextview.backgroundColor = .clear
         setupNavigation()
         setupConstraints()
         setupForm()
@@ -140,8 +143,13 @@ class NewsDetailVC: UIViewController, UITextViewDelegate, UIScrollViewDelegate, 
     }
     
     private func setupNavigation() {
-        self.navigationItem.titleView = self.titleButton
+        
         self.navigationItem.largeTitleDisplayMode = .never
+        if #available(iOS 13.0, *) {
+            //navigationController?.navigationBar.barTintColor = .red
+        } else {
+            // Fallback on earlier versions
+        }
         let editItem = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editData))
         let backItem = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(setbackButton))
         navigationItem.rightBarButtonItems = [editItem]
@@ -151,6 +159,7 @@ class NewsDetailVC: UIViewController, UITextViewDelegate, UIScrollViewDelegate, 
         } else {
             navigationItem.leftBarButtonItems = nil
         }
+        self.navigationItem.titleView = self.titleButton
     }
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
@@ -187,9 +196,15 @@ class NewsDetailVC: UIViewController, UITextViewDelegate, UIScrollViewDelegate, 
     
     func setupForm() {
         
+        if #available(iOS 13.0, *) {
+            contentView.backgroundColor = .systemBackground
+            self.titleLabel.textColor = .label
+        } else {
+            contentView.backgroundColor = .white
+            self.titleLabel.textColor = .black
+        }
         self.titleLabel.text = self.newsTitle
         self.titleLabel.numberOfLines = 2
-        view.backgroundColor = .white
         
         let date1 = self.newsDate ?? Date()
         let dateFormatter = DateFormatter()
@@ -205,13 +220,13 @@ class NewsDetailVC: UIViewController, UITextViewDelegate, UIScrollViewDelegate, 
         
         let dateString = dateFormatter.string(from: date1)
         self.detailLabel.text = String(format: "%@ %@ %@", "\(String(describing: self.newsDetail!))", "Uploaded", "\(dateString)")
-        self.detailLabel.textColor = .gray
+        self.detailLabel.textColor = .systemGray
         self.detailLabel.sizeToFit() 
     }
     
     func setupFonts() {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.titleLabel.font = Font.celltitle36r
             self.detailLabel.font = Font.celltitle20r
             self.newsTextview.isEditable = true //bug fix

@@ -16,14 +16,14 @@ class BaseSlidingController: UIViewController {
     
     let redView: RightContainerView = {
         let view = RightContainerView()
-        //        view.backgroundColor = .red
+        //        view.backgroundColor = .systemRed
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     let blueView: MenuContainerView = {
         let view = MenuContainerView()
-        view.backgroundColor = .blue
+        view.backgroundColor = .systemBlue
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -132,10 +132,10 @@ class BaseSlidingController: UIViewController {
             let tabBarController = UITabBarController()
             let momentsController = UIViewController()
             momentsController.navigationItem.title = "Moments"
-            momentsController.view.backgroundColor = .orange
+            momentsController.view.backgroundColor = .systemOrange
             
             let testController = UIViewController()
-            testController.view.backgroundColor = .green
+            testController.view.backgroundColor = .systemGreen
             testController.tabBarItem.title = "Test"
             
             let navController = UINavigationController(rootViewController: momentsController)

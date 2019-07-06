@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
 import Parse
 import AVFoundation
 
@@ -105,7 +105,7 @@ class CategoryCell: UICollectionViewCell, UICollectionViewDelegateFlowLayout, UI
         layout.scrollDirection = .horizontal
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.backgroundColor = .orange //UIColor.clear
+        collectionView.backgroundColor = .systemOrange //UIColor.clear
         
         return collectionView
     }()
@@ -113,7 +113,7 @@ class CategoryCell: UICollectionViewCell, UICollectionViewDelegateFlowLayout, UI
     func setupView() {
         loadData()
         
-        backgroundColor = .red //UIColor.clear
+        backgroundColor = .systemRed //UIColor.clear
         
         addSubview(appsCollectionView)
         addSubview(dividerLineView)

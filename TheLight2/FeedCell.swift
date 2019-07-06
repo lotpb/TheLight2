@@ -9,7 +9,7 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 import AVFoundation
 
 
@@ -20,7 +20,7 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
     //parse
     var _feedItems = NSMutableArray()
     var imageObject :PFObject!
-    var imageFile :PFFile!
+    var imageFile :PFFileObject!
     
     private var selectedImage : UIImage?
     var defaults = UserDefaults.standard
@@ -35,7 +35,11 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
         //layout.sectionInset = .init(top: 0, left: 0, bottom: 0, right: 0)
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.translatesAutoresizingMaskIntoConstraints = false
-        cv.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            cv.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+           cv.backgroundColor = .white
+        }
         cv.dataSource = self
         cv.delegate = self
         return cv
@@ -53,7 +57,11 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
     
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
-        refreshControl.backgroundColor = .white //Color.News.navColor
+        if #available(iOS 13.0, *) {
+            refreshControl.backgroundColor = .clear //.systemGroupedBackground
+        } else {
+            refreshControl.backgroundColor = .white //Color.News.navColor
+        }
         refreshControl.tintColor = .lightGray
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor.lightGray]
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh", attributes: attributes)
@@ -199,7 +207,7 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
             socialText = ((_feedItems.object(at: (indexPath! as NSIndexPath).row) as AnyObject).value(forKey: "newsTitle") as? String)!
             
             imageObject = _feedItems.object(at: ((indexPath as NSIndexPath?)?.row)!) as? PFObject
-            imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             imageFile.getDataInBackground { imageData, error in
                 
                 self.selectedImage = UIImage(data: imageData!)
@@ -235,7 +243,7 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
         
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as? VideoCell else { fatalError("Unexpected Index Path") }
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.titleLabelnew.font = Font.News.newstitlePad
             cell.subtitleLabel.font = Font.News.newssourcePad
             cell.numberLabel.font = Font.News.newslabel1Pad
@@ -250,12 +258,17 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
             //cell.storyLabel.font = Font.News.newslabel1
         }
         
-        cell.subtitleLabel.textColor = Color.DGrayColor
-        cell.uploadbylabel.textColor = Color.DGrayColor
+        if #available(iOS 13.0, *) {
+            cell.titleLabelnew.textColor = .label
+        } else {
+            // Fallback on earlier versions
+        }
+        cell.subtitleLabel.textColor = .systemGray //Color.DGrayColor
+        cell.uploadbylabel.textColor = .systemGray //Color.DGrayColor
         
         if (defaults.bool(forKey: "parsedataKey")) {
             imageObject = _feedItems.object(at: (indexPath).row) as? PFObject
-            imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             imageFile.getDataInBackground { data, error in
                 if error == nil {
                     UIView.transition(with: cell.customImageView, duration: 0.5, options: .transitionCrossDissolve, animations: {
@@ -271,7 +284,7 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
             query.cachePolicy = .cacheThenNetwork
             query.getFirstObjectInBackground { object, error in
                 if error == nil {
-                    if let imageFile = object!.object(forKey: "imageFile") as? PFFile {
+                    if let imageFile = object!.object(forKey: "imageFile") as? PFFileObject {
                         imageFile.getDataInBackground { imageData, error in
                             
                             UIView.transition(with: cell.profileImageView, duration: 0.5, options: .transitionCrossDissolve, animations: {
@@ -330,7 +343,7 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
             cell.numberLabel.text! = ""
         }
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             if (defaults.bool(forKey: "parsedataKey")) {
                 cell.storyLabel.text = (self._feedItems[(indexPath).row] as AnyObject).value(forKey: "storyText") as? String
             } else {
@@ -350,7 +363,7 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             let size = CGSize.init(width: UIScreen.main.bounds.width, height: 275)
             return size
         } else {
@@ -390,7 +403,7 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
             }
             
             imageObject = _feedItems.object(at: indexPath.row) as? PFObject
-            imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             imageFile.getDataInBackground { (imageData: Data?, error: Error?) -> Void in
                 
                 let imageDetailurl = self.imageFile.url
@@ -463,6 +476,7 @@ class FeedCell: CollectionViewCell, UICollectionViewDataSource, UICollectionView
                 vc.imageUrl = self.newslist[indexPath.row].imageUrl
                 vc.videoURL = self.newslist[indexPath.row].videoUrl
                 let navigationController = UINavigationController(rootViewController: vc)
+                navigationController.modalPresentationStyle = .fullScreen
                 UIApplication.shared.keyWindow?.rootViewController?.present(navigationController, animated: true)
             }
         }

@@ -8,7 +8,8 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
 import UserNotifications
 import MessageUI
 
@@ -72,7 +73,7 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
     lazy var titleButton: UIButton = {
         let button = UIButton()
         button.frame = .init(x: 0, y: 0, width: 100, height: 32)
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             button.setTitle("TheLight Software - New Message", for: .normal)
         } else {
             button.setTitle("New Message", for: .normal)
@@ -87,7 +88,7 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
         let imageView = CustomImageView()
         imageView.frame = .init(x: 15, y: 12, width: 50, height: 50)
         imageView.layer.masksToBounds = true
-        imageView.backgroundColor = .red
+        imageView.backgroundColor = .systemRed
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -104,12 +105,11 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupNavigationButtons()
+        setupNavigation()
         loadImageProfile()
         configureTextView()
         setupForm()
         setupDatePicker()
-        self.navigationItem.titleView = self.titleButton
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -139,29 +139,45 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
         // Dispose of any resources that can be recreated.
     }
     
-    private func setupNavigationButtons() {
+    private func setupNavigation() {
         let cameraButton = UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(shootPhoto))
         navigationItem.rightBarButtonItems = [cameraButton]
+        self.navigationItem.titleView = self.titleButton
     }
     
      func setupForm() {
-        
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = .systemBackground
+            subject!.backgroundColor = .systemBackground
+            photoView.backgroundColor = .systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
         photoView.addSubview(self.imageProfile)
         self.imageProfile.translatesAutoresizingMaskIntoConstraints = true
         self.imageProfile.layer.cornerRadius = 5
         self.imageProfile.layer.masksToBounds = true
         self.imageProfile.contentMode = .scaleAspectFill
 
-        self.tableView!.backgroundColor =  UIColor(white:0.90, alpha:1.0)
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        }
         self.tableView!.tableFooterView = UIView(frame: .zero)
         
         self.Like!.setImage(#imageLiteral(resourceName: "Thumb Up").withRenderingMode(.alwaysTemplate), for: .normal)
         self.Like!.setTitleColor(.white, for: .normal)
-        self.Like?.frame = .init(x: 0, y: 0, width: 90, height: 30)
-        self.Share?.frame = .init(x: 0, y: 0, width: 60, height: 30)
+        self.Like!.frame = .init(x: 0, y: 0, width: 90, height: 30)
+        self.Share!.setTitleColor(Color.twitterBlue, for: .normal)
+        self.Share!.backgroundColor = .white
+        self.Share!.frame = .init(x: 0, y: 0, width: 60, height: 30)
+        let btnLayer: CALayer = self.Share!.layer
+        btnLayer.cornerRadius = 9.0
+        btnLayer.masksToBounds = true
         self.toolBar!.barTintColor = Color.twitterBlue
         
-        self.subject?.textContainerInset = .init(top: -01, left: 0, bottom: 0, right: 0)
+        self.subject?.textContainerInset = .init(top: 15, left: 5, bottom: 0, right: 0)
         
         if ((self.formStatus == "New") || (self.formStatus == "Reply")) {
             
@@ -221,7 +237,6 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
         let tabArray = self.tabBarController?.tabBar.items as NSArray?
         let tabItem = tabArray?.object(at: 1) as? UITabBarItem
         tabItem?.badgeValue = "New"
-        //UIApplication.viewControllers?[1].tabBarItem.badgeValue = "New"
     }
 
     // MARK: - textView delegate
@@ -280,9 +295,9 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
         subject?.autocorrectionType = .yes
         subject?.dataDetectorTypes = .all //.link
         self.characterCountLabel!.text = ""
-        self.characterCountLabel!.textColor = .gray
+        self.characterCountLabel!.textColor = .systemGray
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.subject!.font = Font.celltitle22l
         } else {
             self.subject!.font = Font.Blog.cellsubject
@@ -455,7 +470,7 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
             query.cachePolicy = .cacheThenNetwork
             query.getFirstObjectInBackground {(object: PFObject?, error: Error?) in
                 if error == nil {
-                    if let imageFile = object!.object(forKey: "imageFile") as? PFFile {
+                    if let imageFile = object!.object(forKey: "imageFile") as? PFFileObject {
                         imageFile.getDataInBackground { imageData, error in
                             self.imageProfile.image = UIImage(data: imageData!)
                         }
@@ -512,10 +527,10 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
         let mail = MFMailComposeViewController()
         mail.mailComposeDelegate = self
         mail.setToRecipients(["eunited@optonline.net"])
-        mail.setSubject("Blog Post")
-        mail.setMessageBody("New Blog Posted by \(self.postby!) at TheLight", isHTML: false)
+        mail.setSubject("New Blog Posted by \(self.postby!)")
+        mail.setMessageBody(self.subject!.text, isHTML: true)
         let imageData: NSData = imageProfile.image!.pngData()! as NSData
-        mail.addAttachmentData(imageData as Data, mimeType: "image/png", fileName: "imageName")
+        mail.addAttachmentData(imageData as Data, mimeType: "image/jpg", fileName: "imageName")
         self.present(mail, animated: true)
     }
     
@@ -599,7 +614,6 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
                     
                     saveblog.saveInBackground { (success: Bool, error: Error?) in
                         if success == true {
-                            
                             self.simpleAlert(title: "Upload Complete", message: "Successfully updated the data")
                         } else {
                             self.simpleAlert(title: "Upload Failure", message: "Failure updated the data")
@@ -645,14 +659,13 @@ class BlogNewController: UIViewController, UITextFieldDelegate, UITextViewDelega
             }
         }
         
-        DispatchQueue.main.async {
-            
-            self.navigationController!.popViewController(animated: true)
-            self.dismiss(animated: true)
-            
-            let vc = self.storyboard?.instantiateViewController(withIdentifier: "blogId")
-            self.show(vc!, sender: self)
-        }
+        //DispatchQueue.main.async {
+        self.navigationController!.popViewController(animated: true)
+        self.dismiss(animated: true)
+        
+        let vc = self.storyboard?.instantiateViewController(withIdentifier: "blogId")
+        self.show(vc!, sender: self)
+        //}
         
         let feedbackGenerator = UINotificationFeedbackGenerator()
         feedbackGenerator.notificationOccurred(.success)
@@ -700,9 +713,21 @@ extension BlogNewController: UITableViewDataSource {
         
         cell = tableView.dequeueReusableCell(withIdentifier: cellID, for: indexPath)
         
+        if #available(iOS 13.0, *) {
+            cell.textLabel?.textColor = .systemBlue
+            cell.detailTextLabel?.textColor = .label
+        } else {
+            // Fallback on earlier versions
+        }
+        
         if indexPath.row == 0 {
             
             self.activeImage.frame = .init(x: tableView.frame.width-35, y: 10, width: 18, height: 22)
+            if #available(iOS 13.0, *) {
+                self.activeImage.tintColor = .systemBlue
+            } else {
+                // Fallback on earlier versions
+            }
             
             if (self.liked == nil || self.liked == 0) {
                 self.Like!.tintColor = .white
@@ -742,13 +767,6 @@ extension BlogNewController: UITableViewDataSource {
             cell.textLabel!.text = itemData[kTitleKey] as? String
             cell.detailTextLabel?.text = itemData[kDateKey] as? String
             cell.selectionStyle = .none
-            
-            if (defaults.bool(forKey: "parsedataKey")) {
-                cell.detailTextLabel?.textColor = .red
-            } else {
-                cell.detailTextLabel?.textColor = Color.twitterBlue
-            }
-            
         }
         return cell
     }

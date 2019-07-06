@@ -49,17 +49,28 @@ public extension UIViewController {
     
     func setMainNavItems() {
         
+        /*
         var preferredStatusBarStyle : UIStatusBarStyle {
             return .lightContent
+        } */
+ 
+        if #available(iOS 13.0, *) {
+            if let statusBar = UIStatusBarManager.self as? UIView {
+                if statusBar.responds(to: #selector(setter: UIView.backgroundColor)) {
+                    statusBar.backgroundColor = #colorLiteral(red: 0, green: 0.7156304717, blue: 0.9302947521, alpha: 1)
+                }
+            }
+        } else {
+            // Fallback on earlier versions
+            if let statusBar = UIApplication.shared.value(forKey: "statusBar") as? UIView {
+                if statusBar.responds(to: #selector(setter: UIView.backgroundColor)) {
+                    statusBar.backgroundColor = .black
+                }
+            }
         }
         
-        let statusBar: UIView = UIApplication.shared.value(forKey: "statusBar") as! UIView
-        if statusBar.responds(to: #selector(setter: UIView.backgroundColor)) {
-            statusBar.backgroundColor = .black
-        } 
-        
         navigationController?.navigationBar.barTintColor = .black
-        navigationController?.navigationBar.tintColor = .gray
+        navigationController?.navigationBar.tintColor = .systemGray
         navigationController?.navigationBar.backgroundColor = .black
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
         navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white, NSAttributedString.Key.font:UIFont.boldSystemFont(ofSize: 26)]
@@ -71,25 +82,36 @@ public extension UIViewController {
     }
     
     private func setupNewsNavigationBarItems() {
-        
-        var preferredStatusBarStyle : UIStatusBarStyle {
-            return .lightContent
-        }
+        /*
         
         let statusBar: UIView = UIApplication.shared.value(forKey: "statusBar") as! UIView
         if statusBar.responds(to: #selector(setter: UIView.backgroundColor)) {
             if UI_USER_INTERFACE_IDIOM() == .pad {
                 statusBar.backgroundColor = .black
-                navigationController?.navigationBar.barTintColor = .black
+                if #available(iOS 13.0, *) {
+                    navigationController?.navigationBar.barTintColor = .systemBackground
+                } else {
+                    navigationController?.navigationBar.barTintColor = .black
+                }
             } else {
-                statusBar.backgroundColor = Color.News.navColor
-                navigationController?.navigationBar.barTintColor = Color.News.navColor
+                if #available(iOS 13.0, *) {
+                    statusBar.backgroundColor = .systemBackground
+                    navigationController?.navigationBar.barTintColor = .systemBackground
+                } else {
+                    statusBar.backgroundColor = Color.News.navColor
+                    navigationController?.navigationBar.barTintColor = Color.News.navColor
+                }
                 navigationController?.navigationBar.isTranslucent = false
             }
-        }
+        } */
 
-        navigationController?.navigationBar.tintColor = .black //.white
-        navigationController?.navigationBar.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            navigationController?.navigationBar.backgroundColor = .systemBackground
+            navigationController?.navigationBar.tintColor = .systemGray
+        } else {
+            navigationController?.navigationBar.backgroundColor = .white
+            navigationController?.navigationBar.tintColor = .white
+        }
         
         //remove navbar line
         navigationController?.navigationBar.shadowImage = UIImage()
@@ -98,17 +120,21 @@ public extension UIViewController {
     }
     
     private func setupTwitterNavItems() {
-        
-        var preferredStatusBarStyle : UIStatusBarStyle {
-            return .default
-        }
-        
+        /*
         let statusBar: UIView = UIApplication.shared.value(forKey: "statusBar") as! UIView
         if statusBar.responds(to: #selector(setter: UIView.backgroundColor)) {
-            statusBar.backgroundColor = .white
-            navigationController?.navigationBar.barTintColor = .white
+            if #available(iOS 13.0, *) {
+                statusBar.backgroundColor = .systemBackground
+            } else {
+                statusBar.backgroundColor = .white
+            }
+            if #available(iOS 13.0, *) {
+                navigationController?.navigationBar.barTintColor = .systemBackground
+            } else {
+                navigationController?.navigationBar.barTintColor = .white
+            }
             navigationController?.navigationBar.isTranslucent = false //removed a light bar
-        }
+        } */
         
         let titleImageView = UIImageView(image: #imageLiteral(resourceName: "title_icon"))
         titleImageView.frame = .init(x: 0, y: 0, width: 34, height: 34)
@@ -118,7 +144,7 @@ public extension UIViewController {
         navigationController?.navigationBar.tintColor = Color.twitterBlue
         //navigationController?.navigationBar.backgroundColor = .white
         //navigationController?.navigationBar.barTintColor = .black
-        UINavigationBar.appearance().tintColor = .gray
+        UINavigationBar.appearance().tintColor = .systemGray
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor:Color.twitterline, NSAttributedString.Key.font:UIFont.boldSystemFont(ofSize: 26)]
         
         let separatorLineView1 = UIView(frame: .init(x: 0, y: 0, width: view.frame.size.width, height: 0.5))

@@ -8,7 +8,7 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 
 protocol LookupDataDelegate: class {
     func cityFromController(_ passedData: String)
@@ -30,10 +30,11 @@ class LookupData: UIViewController {
     
     //search
     private var searchController: UISearchController!
-    private var resultsController: UITableViewController!
-    private var filteredTitles = NSMutableArray()
+    private var resultsController = UITableViewController()
+    var filteredTitles = NSMutableArray()
     var lookupItem : String?
     var isFilltered = false
+
     //firebase
     var ziplist = [ZipModel]()
     var saleslist = [SalesModel]()
@@ -59,23 +60,10 @@ class LookupData: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        self.extendedLayoutIncludesOpaqueBars = true
         loadData()
+        setupNavigation()
         setupTableView()
-        navigationItem.title = String(format: "%@ %@", "Lookup", (self.lookupItem)!)
-        //UINavigationBar.appearance().largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor:UIColor.white, NSAttributedStringKey.font:UIFont.boldSystemFont(ofSize: 26)]
-        self.navigationItem.largeTitleDisplayMode = .always
-        
-        // MARK: - New SearchBar
-        searchController = UISearchController(searchResultsController: resultsController)
-        searchController.searchResultsUpdater = self
-        definesPresentationContext = true
-        searchController.searchBar.barTintColor = Color.DGrayColor
-        tableView!.tableFooterView = UIView(frame: .zero)
-        if (defaults.bool(forKey: "parsedataKey")) {
-            self.present(searchController, animated: true)
-        }
-        
         self.tableView!.addSubview(self.refreshControl)
     }
     
@@ -93,17 +81,44 @@ class LookupData: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    private func setupNavigation() {
+        
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.title = String(format: "%@ %@", "Lookup", (self.lookupItem)!)
+        
+        searchController = UISearchController(searchResultsController: resultsController)
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.sizeToFit()
+        searchController.obscuresBackgroundDuringPresentation = false
+        
+        if let textfield = searchController.searchBar.value(forKey: "searchField") as? UITextField {
+            if let backgroundview = textfield.subviews.first {
+                backgroundview.backgroundColor = .white
+                backgroundview.layer.cornerRadius = 10
+                backgroundview.clipsToBounds = true
+            }
+        }
+        
+        self.definesPresentationContext = true
+    }
+    
     func setupTableView() {
         self.tableView!.delegate = self
         self.tableView!.dataSource = self
+        self.tableView!.sizeToFit()
+        self.tableView!.clipsToBounds = true
         self.tableView!.backgroundColor = Color.LGrayColor
+        self.tableView!.tableFooterView = UIView(frame: .zero)
         
-        resultsController = UITableViewController(style: .plain)
         resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
+        resultsController.tableView.backgroundColor = Color.LGrayColor
         resultsController.tableView.sizeToFit()
         resultsController.tableView.clipsToBounds = true
         resultsController.tableView.dataSource = self
         resultsController.tableView.delegate = self
+        resultsController.tableView.tableFooterView = UIView(frame: .zero)
     }
     
     // MARK: - Refresh
@@ -164,6 +179,9 @@ class LookupData: UIViewController {
                 let zipTxt = ZipModel(dictionary: dictionary)
                 self.ziplist.append(zipTxt)
                 
+                self.ziplist.sort(by: { (p1, p2) -> Bool in
+                    return p1.city.compare(p2.city) == .orderedAscending
+                })
                 DispatchQueue.main.async(execute: {
                     self.tableView?.reloadData()
                 })
@@ -174,6 +192,9 @@ class LookupData: UIViewController {
                 let salesTxt = SalesModel(dictionary: dictionary)
                 self.saleslist.append(salesTxt)
                 
+                self.saleslist.sort(by: { (p1, p2) -> Bool in
+                    return p1.salesman.compare(p2.salesman) == .orderedAscending
+                })
                 DispatchQueue.main.async(execute: {
                     self.tableView?.reloadData()
                 })
@@ -184,6 +205,9 @@ class LookupData: UIViewController {
                 let jobTxt = JobModel(dictionary: dictionary)
                 self.joblist.append(jobTxt)
                 
+                self.joblist.sort(by: { (p1, p2) -> Bool in
+                    return p1.description.compare(p2.description) == .orderedAscending
+                })
                 DispatchQueue.main.async(execute: {
                     self.tableView?.reloadData()
                 })
@@ -214,6 +238,9 @@ class LookupData: UIViewController {
                     let prodTxt = ProdModel(dictionary: dictionary)
                     self.prodlist.append(prodTxt)
                     
+                    self.prodlist.sort(by: { (p1, p2) -> Bool in
+                        return p1.products.compare(p2.products) == .orderedAscending
+                    })
                     DispatchQueue.main.async(execute: {
                         self.tableView?.reloadData()
                     })
@@ -244,6 +271,9 @@ class LookupData: UIViewController {
                     let adTxt = AdModel(dictionary: dictionary)
                     self.adlist.append(adTxt)
                     
+                    self.adlist.sort(by: { (p1, p2) -> Bool in
+                        return p1.advertiser.compare(p2.advertiser) == .orderedAscending
+                    })
                     DispatchQueue.main.async(execute: {
                         self.tableView?.reloadData()
                     })
@@ -387,8 +417,8 @@ extension LookupData: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
         if tableView == self.tableView {
-            
             if (lookupItem == "City") {
                 if (defaults.bool(forKey: "parsedataKey")) {
                     return zipArray.count
@@ -422,31 +452,25 @@ extension LookupData: UITableViewDataSource {
             //return foundUsers.count
             return filteredTitles.count
         }
-        return 1
+        return 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         var cellIdentifier: String!
-        
-        if tableView == self.tableView {
-            cellIdentifier = "Cell"
-        } else {
-            cellIdentifier = "UserFoundCell"
-        }
+        cellIdentifier = "Cell"
         
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
         
         cell.selectionStyle = .none
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.textLabel!.font = Font.celltitle20l
         } else {
             cell.textLabel!.font = Font.celltitle20l
         }
         
         if (tableView == self.tableView) {
-            
             if (lookupItem == "City") {
                 if (defaults.bool(forKey: "parsedataKey")) {
                     cell.textLabel!.text = ((zipArray[indexPath.row] as AnyObject).value(forKey: "City") as? String)!
@@ -484,20 +508,52 @@ extension LookupData: UITableViewDataSource {
                 }
             }
         } else {
-            if (lookupItem == "City") {
-                //cell.textLabel!.text = foundUsers[indexPath.row]
-                cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "City") as? String)!
-            } else if (lookupItem == "Salesman") {
-                cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "Salesman") as? String)!
-            } else if (lookupItem == "Job") {
-                cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "Description") as? String)!
-            } else if (lookupItem == "Product") {
-                cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "Products") as? String)!
-            } else if (lookupItem == "Advertiser") {
-                cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "Advertiser") as? String)!
+            //search
+            cellIdentifier = "UserFoundCell"
+            //let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+            
+            if (defaults.bool(forKey: "parsedataKey")) {
+                if (lookupItem == "City") {
+                    //cell.textLabel!.text = foundUsers[indexPath.row]
+                    cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "City") as? String)!
+                } else if (lookupItem == "Salesman") {
+                    cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "Salesman") as? String)!
+                } else if (lookupItem == "Job") {
+                    cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "Description") as? String)!
+                } else if (lookupItem == "Product") {
+                    cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "Products") as? String)!
+                } else if (lookupItem == "Advertiser") {
+                    cell.textLabel!.text = ((filteredTitles[indexPath.row] as AnyObject).value(forKey: "Advertiser") as? String)!
+                }
+            } else {
+                //firebase
+                if (lookupItem == "City") {
+                    let lead: ZipModel
+                    lead = filteredTitles[indexPath.row] as! ZipModel
+                    cell.textLabel!.text = lead.city
+         
+                } else if (lookupItem == "Salesman") {
+                    let lead: SalesModel
+                    lead = filteredTitles[indexPath.row] as! SalesModel
+                    cell.textLabel!.text = lead.salesman
+                   
+                } else if (lookupItem == "Job") {
+                    let lead: JobModel
+                    lead = filteredTitles[indexPath.row] as! JobModel
+                    cell.textLabel!.text = lead.description
+                   
+                } else if (lookupItem == "Product") {
+                    let lead: ProdModel
+                    lead = filteredTitles[indexPath.row] as! ProdModel
+                    cell.textLabel!.text = lead.products
+                    
+                } else if (lookupItem == "Advertiser") {
+                    let lead: AdModel
+                    lead = filteredTitles[indexPath.row] as! AdModel
+                    cell.textLabel!.text = lead.advertiser
+                }
             }
         }
-        //cell.textLabel!.text = cityName
         return cell
     }
 }
@@ -509,13 +565,45 @@ extension LookupData: UITableViewDelegate {
 extension LookupData: UISearchResultsUpdating {
     
     func updateSearchResults(for searchController: UISearchController) {
-        let text = searchController.searchBar.text ?? ""
-        if text.isEmpty {
-            //filteredTitles = leadlist.
-        } else {
-            //filteredTitles = leadlist.filter { $0.contains(text) }
-        }
-        tableView?.reloadData()
+        filterContentForSearchText(searchController.searchBar.text!)
+    }
+    
+    func filterContentForSearchText(_ searchText: String) {
+
+    
+
+        /*
+        if (lookupItem == "City") {
+            
+            filteredTitles = filteredTitles.filter { (lead: ZipModel) in
+                let target: String
+                switch(scope.lowercased()) {
+                case "name":
+                    target = lead.city
+                case "city":
+                    target = lead.city
+                case "phone":
+                    target = lead.city
+                case "active":
+                    target = ""
+                default:
+                    target = lead.city
+                }
+                return target.lowercased().contains(searchText.lowercased())
+         
+            
+        } else if (lookupItem == "Salesman") {
+            
+        } else if (lookupItem == "Job") {
+            
+        } else if (lookupItem == "Product") {
+            
+        } else if (lookupItem == "Advertiser") {
+            
+        } */
+        DispatchQueue.main.async {
+            self.resultsController.tableView.reloadData()
+            }
     }
 }
 

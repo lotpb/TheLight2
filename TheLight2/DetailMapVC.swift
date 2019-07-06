@@ -38,6 +38,7 @@ class DetailedMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDeleg
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationItem.largeTitleDisplayMode = .never
         // Track user location
         detailedMapView.delegate = self
         detailedMapView.userTrackingMode = MKUserTrackingMode.follow
@@ -54,6 +55,12 @@ class DetailedMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDeleg
         self.tableView.register(NearbyCell.self, forCellReuseIdentifier: "NearbyCell")
 
         //setupConstraints()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        setMainNavItems()
     }
     //creates a custom MKLocalSearchRequest and gets MKLocalSearchResponse
     func fetchLocalData(category: String) {
@@ -119,7 +126,7 @@ class DetailedMapVC: UIViewController, MKMapViewDelegate, CLLocationManagerDeleg
         let reuseId = "pin"
         var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId) as? MKPinAnnotationView
         pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-        pinView?.pinTintColor = .orange
+        pinView?.pinTintColor = .systemOrange
         pinView?.canShowCallout = true
         let smallSquare = CGSize(width: 30, height: 30)
         let button = UIButton(frame: .init(origin: .zero, size: smallSquare))

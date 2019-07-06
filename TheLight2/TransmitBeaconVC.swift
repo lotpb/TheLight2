@@ -35,7 +35,7 @@ class TransmitBeaconVC: UIViewController, CBPeripheralManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.lblStatus?.font = Font.Snapshot.celltitlePad
             self.txtMajor?.font = Font.Snapshot.celltitlePad
             self.txtMinor?.font = Font.Snapshot.celltitlePad
@@ -54,7 +54,7 @@ class TransmitBeaconVC: UIViewController, CBPeripheralManagerDelegate {
         view.addGestureRecognizer(swipeDownGestureRecognizer)
         
         peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight - Transmit Beacon"
         } else {
             navigationItem.title = "Transmit Beacon"

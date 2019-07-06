@@ -7,7 +7,8 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
 import Parse
 
 protocol UserProfileHeaderDelegate {
@@ -31,7 +32,7 @@ class UserProfileHeader: UICollectionViewCell {
                 query.cachePolicy = .cacheThenNetwork
                 query.getFirstObjectInBackground {(object: PFObject?, error: Error?) in
                     if error == nil {
-                        if let imageFile = object!.object(forKey: "imageFile") as? PFFile {
+                        if let imageFile = object!.object(forKey: "imageFile") as? PFFileObject {
                             imageFile.getDataInBackground { imageData, error in
                                 self.profileImageView.image = UIImage(data: imageData!)
                                 self.usernameLabel.text = PFUser.current()!.username
@@ -90,28 +91,28 @@ class UserProfileHeader: UICollectionViewCell {
     
     @objc func handleChangeToGridView() {
         gridButton.tintColor = Color.twitterBlue
-        listButton.tintColor = UIColor(white: 0, alpha: 0.2)
+        listButton.tintColor = .systemGray //UIColor(white: 0, alpha: 0.2)
         delegate?.didChangeToGridView()
     }
     
     lazy var listButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "list"), for: .normal)
-        button.tintColor = UIColor(white:0, alpha: 0.2)
+        button.tintColor = .systemGray //UIColor(white:0, alpha: 0.2)
         button.addTarget(self, action: #selector(handleChangeToListView), for: .touchUpInside)
         return button
     }()
     
     @objc func handleChangeToListView() {
         listButton.tintColor = Color.twitterBlue
-        gridButton.tintColor = UIColor(white: 0, alpha: 0.2)
+        gridButton.tintColor = .systemGray //UIColor(white: 0, alpha: 0.2)
         delegate?.didChangeToListView()
     }
     
     let bookmarkButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "ribbon"), for: .normal)
-        button.tintColor = UIColor(white:0, alpha: 0.2)
+        button.tintColor = .systemGray //UIColor(white:0, alpha: 0.2)
         //button.addTarget(self, action: #selector(settingButton), for: .touchUpInside)
         return button
     }()
@@ -119,7 +120,11 @@ class UserProfileHeader: UICollectionViewCell {
     //lazy var because the title is being changed
     lazy var editProfileBtn: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitleColor(.black, for: .normal)
+        if #available(iOS 13.0, *) {
+            button.setTitleColor(.label, for: .normal)
+        } else {
+            button.setTitleColor(.black, for: .normal)
+        }
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
         button.layer.borderColor = UIColor.lightGray.cgColor
         button.layer.borderWidth = 1
@@ -281,7 +286,7 @@ class UserProfileHeader: UICollectionViewCell {
         self.editProfileBtn.setTitle("Unfollow", for: .normal)
         self.editProfileBtn.backgroundColor = .white
         self.editProfileBtn.setTitleColor(.black, for: .normal)
-        self.editProfileBtn.layer.borderColor = UIColor.gray.cgColor
+        self.editProfileBtn.layer.borderColor = UIColor.systemGray.cgColor
     }
     
     required init?(coder aDecoder: NSCoder) {

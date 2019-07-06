@@ -39,7 +39,7 @@ class SpotBeaconVC: UIViewController, CLLocationManagerDelegate, CBPeripheralMan
         lblBeaconDetails.isHidden = false
         btnSwitchSpotting.layer.cornerRadius = 30.0
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             //self.beaconspotLabel?.font = Font.Snapshot.celltitlePad
             self.beaconlocateLabel?.font = Font.Snapshot.celltitlePad
             self.lblBeaconDetails?.font = Font.News.newstitlePad
@@ -50,7 +50,7 @@ class SpotBeaconVC: UIViewController, CLLocationManagerDelegate, CBPeripheralMan
         }
         
         peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight - Spot Beacon"
         } else {
             navigationItem.title = "Spot Beacon"
@@ -133,28 +133,28 @@ class SpotBeaconVC: UIViewController, CLLocationManagerDelegate, CBPeripheralMan
             switch distance {
             case .unknown:
                 proximityMessage = "Where's the beacon?"
-                self.view.backgroundColor = .gray
+                self.view.backgroundColor = .systemGray
                 self.btnSwitchSpotting?.titleLabel?.textColor = .white
-                self.btnSwitchSpotting?.backgroundColor = .orange
-                self.beaconspotLabel.textColor = .orange
+                self.btnSwitchSpotting?.backgroundColor = .systemOrange
+                self.beaconspotLabel.textColor = .systemOrange
                 self.lblBeaconReport.textColor = .white
                 self.lblBeaconDetails.textColor = .white
                 self.beaconlocateLabel.textColor = .black
                 
             case .far:
                 proximityMessage = "Far"
-                self.view.backgroundColor = .blue
+                self.view.backgroundColor = .systemBlue
                 self.btnSwitchSpotting?.titleLabel?.textColor = .white
-                self.btnSwitchSpotting?.backgroundColor = .orange
-                self.beaconspotLabel.textColor = .orange
+                self.btnSwitchSpotting?.backgroundColor = .systemOrange
+                self.beaconspotLabel.textColor = .systemOrange
                 self.lblBeaconReport.textColor = .white
                 self.lblBeaconDetails.textColor = .white
                 self.beaconlocateLabel.textColor = .white
                 
             case .near:
                 proximityMessage = "Near"
-                self.view.backgroundColor = .orange
-                self.btnSwitchSpotting?.titleLabel?.textColor = .orange
+                self.view.backgroundColor = .systemOrange
+                self.btnSwitchSpotting?.titleLabel?.textColor = .systemOrange
                 self.btnSwitchSpotting?.backgroundColor = .white
                 self.beaconspotLabel.textColor = .white
                 self.lblBeaconReport.textColor = .white
@@ -163,10 +163,10 @@ class SpotBeaconVC: UIViewController, CLLocationManagerDelegate, CBPeripheralMan
                 
             case .immediate:
                 proximityMessage = "Very close"
-                self.view.backgroundColor = .red
+                self.view.backgroundColor = .systemRed
                 self.btnSwitchSpotting?.titleLabel?.textColor = .white
-                self.btnSwitchSpotting?.backgroundColor = .orange
-                self.beaconspotLabel.textColor = .orange
+                self.btnSwitchSpotting?.backgroundColor = .systemOrange
+                self.beaconspotLabel.textColor = .systemOrange
                 self.lblBeaconReport.textColor = .white
                 self.lblBeaconDetails.textColor = .white
                 self.beaconlocateLabel.textColor = .black

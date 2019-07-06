@@ -8,16 +8,18 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
+import FirebaseStorage
 import LocalAuthentication
 import FBSDKLoginKit
 import GoogleSignIn
-import TwitterKit
+//import TwitterKit
 import MapKit
 import GeoFire
 
 
-class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, FBSDKLoginButtonDelegate, GIDSignInUIDelegate, GIDSignInDelegate {
+class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, LoginButtonDelegate, GIDSignInUIDelegate, GIDSignInDelegate {
     
     let ipadtitle = UIFont.systemFont(ofSize: 20)
     let celltitle = UIFont.systemFont(ofSize: 18)
@@ -44,11 +46,11 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
     var users: UserModel?
     
     //Facebook
-    var fbButton : FBSDKLoginButton = FBSDKLoginButton()
+    var fbButton : FBLoginButton = FBLoginButton()
     //Google
     var googleButton : GIDSignInButton = GIDSignInButton()
     //Twitter
-    var twitterButton : TWTRLogInButton = TWTRLogInButton()
+    //var twitterButton : TWTRLogInButton = TWTRLogInButton()
     
     var profile_pic: String?
     
@@ -63,14 +65,14 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
         
         //Facebook
         fbButton.delegate = self
-        if (FBSDKAccessToken.current() != nil) {
+        if (AccessToken.current != nil) {
             self.simpleAlert(title: "Alert", message: "User is already logged in")
         } else {
-            fbButton.readPermissions = ["public_profile", "email", "user_friends","user_birthday"]
+            //fbButton.rea = ["public_profile", "email", "user_friends","user_birthday"]
         }
         
         //Google
-        GIDSignIn.sharedInstance().clientID = FirebaseApp.app()?.options.clientID
+        //GIDSignIn.sharedInstance().clientID = FirebaseApp.app()!.options.clientID
         GIDSignIn.sharedInstance().uiDelegate = self
         GIDSignIn.sharedInstance().delegate = self
         GIDSignIn.sharedInstance().signInSilently() //.signIn()
@@ -99,10 +101,10 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
         UIView.animate(withDuration: 0.5, delay: 0.3, options: [], animations: {
             self.googleButton.frame = .init(x: self.view.frame.width - 125, y: 320, width: 110, height: 40)
             self.fbButton.frame = .init(x: 10, y: 325, width: 110, height: 40)
-            if UI_USER_INTERFACE_IDIOM() == .pad {
-                self.twitterButton.frame = .init(x: self.view.frame.width/2 - 90, y: 325, width: 180, height: 40)
+            if UIDevice.current.userInterfaceIdiom == .pad  {
+                //self.twitterButton.frame = .init(x: self.view.frame.width/2 - 90, y: 325, width: 180, height: 40)
             } else {
-                self.twitterButton.frame = .init(x: self.view.frame.width/2 - 55, y: 325, width: 110, height: 40)
+                //self.twitterButton.frame = .init(x: self.view.frame.width/2 - 55, y: 325, width: 110, height: 40)
             }
         }, completion: nil
         )
@@ -120,7 +122,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
     
     // MARK: - LoginUser
     func setupFont() {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.usernameField!.font = ipadtitle
             self.passwordField!.font = ipadtitle
             self.reEnterPasswordField!.font = ipadtitle
@@ -152,7 +154,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
             self.authentButton!.isHidden = true
             self.fbButton.isHidden = true
             self.googleButton.isHidden = true
-            self.twitterButton.isHidden = true
+            //self.twitterButton.isHidden = true
             self.emailField!.isHidden = false
             self.phoneField!.isHidden = false
             self.plusPhotoButton.isHidden = false
@@ -165,7 +167,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
             self.forgotPassword!.isHidden = false
             self.fbButton.isHidden = false
             self.googleButton.isHidden = false
-            self.twitterButton.isHidden = false
+            //self.twitterButton.isHidden = false
             self.emailField!.isHidden = true
             self.phoneField!.isHidden = true
             self.backloginBtn!.isHidden = true
@@ -189,8 +191,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
         self.mainView.addSubview(googleButton)
         
         mapView?.translatesAutoresizingMaskIntoConstraints = false
-        if UI_USER_INTERFACE_IDIOM() == .pad {
-            mapView?.heightAnchor.constraint(equalToConstant: 380).isActive = true
+        if UIDevice.current.userInterfaceIdiom == .pad  {            mapView?.heightAnchor.constraint(equalToConstant: 380).isActive = true
         } else {
             mapView?.heightAnchor.constraint(equalToConstant: 175).isActive = true
         }
@@ -268,7 +269,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
         self.phoneField!.isHidden = true
         self.fbButton.isHidden = false
         self.googleButton.isHidden = false
-        self.twitterButton.isHidden = false
+        //self.twitterButton.isHidden = false
         self.plusPhotoButton.isHidden = true
         setupDefaults()
     }
@@ -289,7 +290,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
             self.phoneField!.isHidden = false
             self.fbButton.isHidden = true
             self.googleButton.isHidden = true
-            self.twitterButton.isHidden = true
+            //self.twitterButton.isHidden = true
             self.plusPhotoButton.isHidden = false
             
         } else {
@@ -324,7 +325,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
             }
             //pictureData = UIImageJPEGRepresentation((self.plusPhotoButton.imageView?.image)!, 0.9)
             pictureData = self.plusPhotoButton.imageView?.image?.jpegData(compressionQuality: 0.9)
-            let file = PFFile(name: "Image.jpg", data: pictureData!)
+            let file = PFFileObject(name: "Image.jpg", data: pictureData!)
             
             let user = PFUser()
             user.username = usernameField!.text
@@ -425,6 +426,8 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
     
     // MARK: - TwitterButton
     private func setupTwitterButton() {
+        /*
+ 
         twitterButton = TWTRLogInButton { (session, error) in
             if let err = error {
                 print("Failed to login via Twitter: ", err)
@@ -446,7 +449,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
             self.redirectToHome()
             self.refreshLocation()
         }
-        self.mainView.addSubview(twitterButton)
+        self.mainView.addSubview(twitterButton) */
     } 
     
     // MARK: - Google
@@ -461,7 +464,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
         guard let accessToken = user.authentication.accessToken else { return }
         let credentials = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
         
-        Auth.auth().signInAndRetrieveData(with: credentials) { (authResult, error) in
+        Auth.auth().signIn(with: credentials) { (authResult, error) in
             if let err = error {
                 print("Failed to create a Firebase User with Google account: ", err)
                 return
@@ -510,7 +513,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
     }
     
     // MARK: - Facebook
-    func loginButton(_ loginButton: FBSDKLoginButton!, didCompleteWith result: FBSDKLoginManagerLoginResult!, error: Error!) {
+    func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
         if ((error) != nil) {
             print(error!)
             return
@@ -518,15 +521,15 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
         fetchProfileFB()
     }
     
-    func loginButtonDidLogOut(_ loginButton: FBSDKLoginButton!) {
+    func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
         print("Did log out of facebook")
     }
     
     func fetchProfileFB() {
         
-        let credentials = FacebookAuthProvider.credential(withAccessToken: FBSDKAccessToken.current().tokenString)
+        let credentials = FacebookAuthProvider.credential(withAccessToken: AccessToken.current!.tokenString)
         
-        Auth.auth().signInAndRetrieveData(with: credentials) { (authResult, error) in
+        Auth.auth().signIn(with: credentials) { (authResult, error) in
             if let error = error {
                 print("Login error: \(error.localizedDescription)")
                 let alertController = UIAlertController(title: "Login Error", message: error.localizedDescription, preferredStyle: .alert)
@@ -539,7 +542,7 @@ class LoginController: UIViewController, UITextFieldDelegate, UIImagePickerContr
             print("Successfully logged in facebook with our user: ", self.user ?? "")
         }
         
-        FBSDKGraphRequest(graphPath: "/me", parameters: ["fields": "id, name, first_name, last_name, picture.type(large), email"])
+        GraphRequest(graphPath: "/me", parameters: ["fields": "id, name, first_name, last_name, picture.type(large), email"])
             .start { (connection, result, error) in
                 if (error == nil) {
                     

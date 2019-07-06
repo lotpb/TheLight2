@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import SwiftUI
 import Parse
-import Firebase
+import FirebaseDatabase
 
 class Lead: UIViewController {
     
@@ -36,7 +37,7 @@ class Lead: UIViewController {
     
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
-        refreshControl.backgroundColor = Color.Lead.navColor
+        refreshControl.backgroundColor = .clear //Color.Lead.navColor
         refreshControl.tintColor = .white
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh", attributes: attributes)
@@ -49,7 +50,6 @@ class Lead: UIViewController {
         super.viewDidLoad()
         self.extendedLayoutIncludesOpaqueBars = true
         setupNavigation()
-        setupSearch()
         setupTableView()
         self.tableView!.addSubview(self.refreshControl)
     }
@@ -83,38 +83,28 @@ class Lead: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    private func setupSearch() {
-
+    private func setupNavigation() {
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newDataBtn))
+        navigationItem.title = "Leads"
+        
         searchController = UISearchController(searchResultsController: resultsController)
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.scopeButtonTitles = searchScope
+        searchController.searchBar.sizeToFit()
+        searchController.obscuresBackgroundDuringPresentation = false
+        
         if let textfield = searchController.searchBar.value(forKey: "searchField") as? UITextField {
             if let backgroundview = textfield.subviews.first {
-                backgroundview.backgroundColor = UIColor.white
+                backgroundview.backgroundColor = .white
                 backgroundview.layer.cornerRadius = 10
                 backgroundview.clipsToBounds = true
             }
         }
-        searchController.searchResultsUpdater = self
-        searchController.searchBar.scopeButtonTitles = searchScope
         
-        searchController.obscuresBackgroundDuringPresentation = false
-        self.navigationController?.navigationBar.topItem?.searchController = searchController
-        
-        if #available(iOS 11.0, *) {
-            self.navigationItem.searchController = searchController
-            navigationItem.hidesSearchBarWhenScrolling = false
-        } else {
-            tableView?.tableHeaderView = searchController.searchBar
-        }
-        definesPresentationContext = true
-    }
-    
-    private func setupNavigation() {
-        navigationItem.title = "Leads"
-        self.navigationItem.largeTitleDisplayMode = .always
-        
-        let addBtn = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newDataBtn))
-        //let searchBtn = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchButton))
-        navigationItem.rightBarButtonItems = [addBtn]
+        self.definesPresentationContext = true
     }
     
     func setupTableView() {
@@ -125,22 +115,25 @@ class Lead: UIViewController {
         self.tableView!.dataSource = self
         self.tableView!.sizeToFit()
         self.tableView!.clipsToBounds = true
-        self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        }
         self.tableView!.tableFooterView = UIView(frame: .zero)
-        self.tableView?.cellLayoutMarginsFollowReadableWidth = true
         
         resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
-        resultsController.tableView.dataSource = self
-        resultsController.tableView.delegate = self
         resultsController.tableView.backgroundColor = Color.LGrayColor
         resultsController.tableView.sizeToFit()
         resultsController.tableView.clipsToBounds = true
+        resultsController.tableView.dataSource = self
+        resultsController.tableView.delegate = self
         resultsController.tableView.tableFooterView = UIView(frame: .zero)
     }
     
     // MARK: - NavigationController Hidden
     @objc func hideBar(notification: NSNotification) {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             
@@ -433,7 +426,7 @@ class Lead: UIViewController {
                 } else {
                     //firebase
                     controller.objectId = leadlist[indexPath!].leadId
-                    controller.leadNo = formatter.string(from: LeadNo! as NSNumber)
+                    controller.leadNo = leadlist[indexPath!].leadId
                     controller.zip = formatter.string(from: Zip! as NSNumber)
                     controller.amount = formatter.string(from: Amount! as NSNumber)
                     controller.tbl22 = formatter.string(from: SalesNo! as NSNumber)
@@ -490,11 +483,9 @@ class Lead: UIViewController {
 extension Lead: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if (tableView == self.tableView) {
-            self.performSegue(withIdentifier: "leaddetailSegue", sender: self)
-        } else {
-            self.performSegue(withIdentifier: "leaddetailSegue", sender: self)
-        }
+        
+        self.performSegue(withIdentifier: "leaddetailSegue", sender: self)
+        
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -524,9 +515,9 @@ extension Lead: UITableViewDataSource {
             cellIdentifier = "Cell"
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! TableViewCell
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 
-                cell.leadtitleLabel!.font = Font.celltitle22m
+                cell.leadtitleLabel!.font = Font.celltitle20m
                 cell.leadsubtitleLabel!.font = Font.celltitle16r
                 cell.leadreplyLabel.font = Font.celltitle16r
                 cell.leadlikeLabel.font = Font.celltitle16r
@@ -535,13 +526,18 @@ extension Lead: UITableViewDataSource {
             }
             
             cell.selectionStyle = .none
-            cell.leadsubtitleLabel!.textColor = .gray
+            if #available(iOS 13.0, *) {
+                cell.leadtitleLabel.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
+            cell.leadsubtitleLabel!.textColor = .systemGray
             cell.myLabel10.backgroundColor = Color.Lead.labelColor1
             cell.leadreplyButton.tintColor = .lightGray
             cell.leadreplyButton.setImage(#imageLiteral(resourceName: "Commentfilled").withRenderingMode(.alwaysTemplate), for: .normal)
             cell.leadreplyLabel.text! = ""
             
-            cell.leadlikeButton.tintColor = .lightGray
+            cell.leadlikeButton.tintColor = .systemYellow
             cell.leadlikeButton.setImage(#imageLiteral(resourceName: "Thumb Up").withRenderingMode(.alwaysTemplate), for: .normal)
             
             cell.customImagelabel.text = "Lead"
@@ -557,7 +553,7 @@ extension Lead: UITableViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 cell.feedItems = _feedItems[indexPath.row] as? Database
-                /*
+                
                 cell.leadtitleLabel!.text = (_feedItems[indexPath.row] as AnyObject).value(forKey: "LastName") as? String ?? ""
                 cell.leadsubtitleLabel!.text = (_feedItems[indexPath.row] as AnyObject).value(forKey: "City") as? String ?? ""
                 cell.myLabel10.text = (_feedItems[indexPath.row] as AnyObject).value(forKey: "Date") as? String ?? ""
@@ -577,7 +573,7 @@ extension Lead: UITableViewDataSource {
                 } else {
                     cell.leadlikeButton!.tintColor = .lightGray
                     cell.leadlikeLabel.text! = ""
-                } */
+                } 
                 
             } else {
                 //firebase
@@ -612,38 +608,42 @@ extension Lead: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
         if (tableView == self.tableView) {
-            if UI_USER_INTERFACE_IDIOM() == .phone {
-                //return 85.0
-                return self._feedItems.count > 0 ? 0 : 85
-            } else {
-                return CGFloat.leastNormalMagnitude
+            if (section == 0) {
+                if UIDevice.current.userInterfaceIdiom == .phone {
+                    //return 85.0
+                    return self._feedItems.count > 0 ? 0 : 85
+                } else {
+                    return CGFloat.leastNormalMagnitude
+                }
             }
+            return 0
         }
-        return 0
+        return 0.0
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
         if (tableView == self.tableView) {
-            guard let header = tableView.dequeueReusableCell(withIdentifier: "Header") as? HeaderViewCell else { fatalError("Unexpected Index Path") }
-            
-            if (defaults.bool(forKey: "parsedataKey")) {
-                header.myLabel1.text = String(format: "%@%d", "Leads\n", _feedItems.count)
-                header.myLabel2.text = String(format: "%@%d", "Active\n", _feedheadItems.count)
-                header.myLabel3.text = String(format: "%@%d", "Events\n", 3)
-            } else {
-                //firebase
-                header.myLabel1.text = String(format: "%@%d", "Leads\n", leadlist.count)
-                header.myLabel2.text = String(format: "%@%d", "Active\n", activeCount ?? 0)
-                header.myLabel3.text = String(format: "%@%d", "Events\n", 3)
+            if (section == 0) {
+                guard let header = tableView.dequeueReusableCell(withIdentifier: "Header") as? HeaderViewCell else { fatalError("Unexpected Index Path") }
+                
+                if (defaults.bool(forKey: "parsedataKey")) {
+                    header.myLabel1.text = String(format: "%@%d", "Leads\n", _feedItems.count)
+                    header.myLabel2.text = String(format: "%@%d", "Active\n", _feedheadItems.count)
+                    header.myLabel3.text = String(format: "%@%d", "Events\n", 3)
+                } else {
+                    //firebase
+                    header.myLabel1.text = String(format: "%@%d", "Leads\n", leadlist.count)
+                    header.myLabel2.text = String(format: "%@%d", "Active\n", activeCount ?? 0)
+                    header.myLabel3.text = String(format: "%@%d", "Events\n", 3)
+                }
+                header.separatorView1.backgroundColor = Color.Lead.buttonColor
+                header.separatorView2.backgroundColor = Color.Lead.buttonColor
+                header.separatorView3.backgroundColor = Color.Lead.buttonColor
+                header.contentView.backgroundColor = Color.Lead.navColor
+                
+                return header
             }
-            header.separatorView1.backgroundColor = Color.Lead.buttonColor
-            header.separatorView2.backgroundColor = Color.Lead.buttonColor
-            header.separatorView3.backgroundColor = Color.Lead.buttonColor
-            header.contentView.backgroundColor = Color.Lead.navColor
-            self.tableView!.tableHeaderView = nil //header
-            
-            return header.contentView
         }
         return nil
     }

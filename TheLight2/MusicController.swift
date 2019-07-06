@@ -39,13 +39,23 @@ class MusicController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        if #available(iOS 13.0, *) {
+            view.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
         noContactsLabel.isHidden = false
         noContactsLabel.text = "Search to Retrieve Apple Music Library..."
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        }
         tableView.isHidden = true
         tableView.tableFooterView = UIView()
         _ = self.downloadsSession
-
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight - Music"
             self.noContactsLabel.font = Font.celltitle20l
         } else {
@@ -398,7 +408,15 @@ extension MusicController: UITableViewDataSource {
         // Delegate cell button tap events to this view controller
         cell.delegate = self
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if #available(iOS 13.0, *) {
+            cell.titleLabel.textColor = .label
+            cell.artistLabel.textColor = .systemGray
+        } else {
+            // Fallback on earlier versions
+        }
+        
+        
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.titleLabel.font = Font.Stat.celltitlePad
             cell.artistLabel.font = Font.celltitle16r
         } else {

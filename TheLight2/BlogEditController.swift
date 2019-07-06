@@ -8,7 +8,7 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 
 class BlogEditController: UIViewController {
     
@@ -96,12 +96,20 @@ class BlogEditController: UIViewController {
     func setupForm() {
         
         self.view.backgroundColor = .lightGray
-        self.toolBar!.barTintColor = .white
+        if #available(iOS 13.0, *) {
+            self.toolBar!.barTintColor = .systemGray
+        } else {
+            self.toolBar!.barTintColor = .white
+        }
         //self.toolBar!.isTranslucent = false set in AppDelegate
         self.toolBar!.layer.masksToBounds = true
         
         self.Like!.setImage(#imageLiteral(resourceName: "Thumb Up").withRenderingMode(.alwaysTemplate), for: .normal)
-        self.Like!.setTitleColor(.gray, for: .normal)
+        if #available(iOS 13.0, *) {
+            self.Like!.setTitleColor(.label, for: .normal)
+        } else {
+            self.Like!.setTitleColor(.systemGray, for: .normal)
+        }
         self.Like?.frame = .init(x: 0, y: 0, width: 90, height: 30)
         if (self.liked == nil) || (self.liked == 0)  {
             self.Like!.tintColor = .lightGray
@@ -137,13 +145,21 @@ class BlogEditController: UIViewController {
         self.tableView!.dataSource = self
         self.tableView!.estimatedRowHeight = 110
         self.tableView!.rowHeight = UITableView.automaticDimension
-        self.tableView!.backgroundColor =  .white
+        
         
         self.listTableView!.delegate = self
         self.listTableView!.dataSource = self
         self.listTableView!.estimatedRowHeight = 75
         self.listTableView!.rowHeight = UITableView.automaticDimension
         self.listTableView!.tableFooterView = UIView(frame: .zero)
+        
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+            self.listTableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = .white
+            self.listTableView!.backgroundColor = .white
+        }
     }
     
     @objc func refreshData(sender:AnyObject) {
@@ -456,13 +472,18 @@ extension BlogEditController: UITableViewDataSource {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as? TableViewCell else { fatalError("Unexpected Index Path") }
             
             cell.selectionStyle = .none
+            if #available(iOS 13.0, *) {
+                cell.titleLabel?.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
             cell.subtitleLabel?.textColor = Color.twitterText
             cell.customImageView.frame = .init(x: 15, y: 11, width: 50, height: 50)
             cell.customImageView.layer.cornerRadius = 0
             cell.customImageView.layer.borderWidth = 0
             cell.customImagelabel.backgroundColor = .clear //fix
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 
                 cell.titleLabel!.font = Font.Blog.celltitlePad
                 cell.subtitleLabel!.font = Font.Blog.cellsubtitlePad
@@ -485,7 +506,7 @@ extension BlogEditController: UITableViewDataSource {
                 query.cachePolicy = .cacheThenNetwork
                 query.getFirstObjectInBackground {(object: PFObject?, error: Error?) in
                     if error == nil {
-                        if let imageFile = object!.object(forKey: "imageFile") as? PFFile {
+                        if let imageFile = object!.object(forKey: "imageFile") as? PFFileObject {
                             imageFile.getDataInBackground { imageData, error in
                                 cell.customImageView.image = UIImage(data: imageData!)
                             }
@@ -510,10 +531,15 @@ extension BlogEditController: UITableViewDataSource {
                 dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss +zzzz"
             }
             
+            
+            //fix date
+            /*
             let dateStr = self.msgDate
-            let date:Date = dateFormatter.date(from: (dateStr)! as String)!
+            let date:Date = dateFormatter.date(from: "\(String(describing: dateStr))")!
             dateFormatter.dateFormat = "MM/dd/yy, h:mm a"
-            cell.msgDateLabel.text = dateFormatter.string(from: (date) as Date)
+            cell.msgDateLabel.text = dateFormatter.string(from: (date) as Date) */
+ 
+            cell.msgDateLabel.text = self.msgDate
 
             cell.titleLabel!.text = self.postby
             cell.subtitleLabel!.text = self.subject
@@ -553,9 +579,9 @@ extension BlogEditController: UITableViewDataSource {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "ReplyCell", for: indexPath) as? ReplyTableCell else { fatalError("Unexpected Index Path") }
             
             cell.selectionStyle = .none
-            cell.replydateLabel.textColor = .gray
+            cell.replydateLabel.textColor = .systemGray
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 
                 cell.replytitleLabel.font = Font.BlogEdit.replytitlePad
                 cell.replysubtitleLabel.font = Font.BlogEdit.replysubtitlePad
@@ -581,7 +607,7 @@ extension BlogEditController: UITableViewDataSource {
                 query.cachePolicy = .cacheThenNetwork
                 query.getFirstObjectInBackground {(object: PFObject?, error: Error?) in
                     if error == nil {
-                        if let imageFile = object!.object(forKey: "imageFile") as? PFFile {
+                        if let imageFile = object!.object(forKey: "imageFile") as? PFFileObject {
                             imageFile.getDataInBackground { imageData, error in
                                 cell.replyImageView.image = UIImage(data: imageData!)
                             }

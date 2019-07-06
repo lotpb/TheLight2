@@ -8,7 +8,7 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 import ContactsUI
 import EventKit
 import MessageUI
@@ -25,6 +25,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
     var tableData4 = NSMutableArray()
     
     @IBOutlet weak var scrollWall: UIScrollView?
+    @IBOutlet weak var contentView: UIView!
     @IBOutlet weak var mainView: UIView?
     @IBOutlet weak var tableView: UIView?
     @IBOutlet weak var mySwitch: UISwitch?
@@ -50,7 +51,6 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
     }
     
     func configureView() {
-
     }
     
     var formController : String?
@@ -128,7 +128,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
     let photoImage: CustomImageView = {
         let imageView = CustomImageView()
         imageView.image = #imageLiteral(resourceName: "plus_photo")
-        //imageView.layer.borderColor = UIColor.lightGray.cgColor
+        imageView.layer.borderColor = UIColor.systemBlue.cgColor
         //imageView.layer.borderWidth = 2.0
         imageView.layer.masksToBounds = true
         imageView.isUserInteractionEnabled = true
@@ -139,7 +139,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
     lazy var mapButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.backgroundColor = Color.BlueColor
+        button.backgroundColor = .systemBlue
         button.setTitle("Map", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.addTarget(self, action: #selector(mapClickButton), for: .touchUpInside)
@@ -163,7 +163,26 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.extendedLayoutIncludesOpaqueBars = true
-        view.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            //view.backgroundColor = .systemGroupedBackground
+            mainView?.backgroundColor = .systemGray6
+            //scrollWall?.backgroundColor = .systemGroupedBackground
+            contentView?.backgroundColor = .systemGroupedBackground
+            tableView?.backgroundColor = .systemGray6
+            listTableView?.backgroundColor = .systemGray6
+            listTableView2?.backgroundColor = .systemGray6
+            newsTableView?.backgroundColor = .systemGroupedBackground
+            labelname?.textColor = .systemGray
+            following?.textColor = .systemGray
+            labelamount?.textColor = .label
+            labeladdress?.textColor = .label
+            labelcity?.textColor = .label
+            labelNo?.textColor = .systemBlue
+            labeldatetext?.textColor = .systemBlue
+            labeldate?.textColor = .label
+        } else {
+            view.backgroundColor = .white
+        }
         
         setupNavigationButtons()
         //Leave this setup below
@@ -175,7 +194,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
         loadData()
         followButton()
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = String(format: "%@ %@", "TheLight Software - \(self.formController!)", "Profile")
         } else {
             navigationItem.title = String(format: "%@ %@", "\(self.formController!)", "Profile")
@@ -255,12 +274,12 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
                 self.mySwitch!.setOn(false, animated:true)
             }
         }
-        self.mySwitch!.onTintColor = Color.BlueColor
+        self.mySwitch!.onTintColor = .systemBlue
         self.mySwitch!.tintColor = .lightGray
     }
     
     func setupFonts() {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             labelamount!.font = Font.Detail.ipadAmount
             labelname!.font = Font.Detail.ipadname
             labeldate!.font = Font.Detail.ipaddate
@@ -271,6 +290,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
             
         } else {
             
+            labelname!.font = Font.celltitle26r
             labeladdress!.font = Font.Detail.textaddress
             labelcity!.font = Font.Detail.textaddress
             mapButton.titleLabel?.font = Font.Detail.textbutton
@@ -281,12 +301,6 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
             } else {
                 labelamount!.font = Font.Detail.textAmount
                 labeldate!.font = Font.Detail.textdate
-            }
-            
-            if self.formController == "Vendor" {
-                labelname!.font = Font.Detail.Vtextname
-            } else {
-                labelname!.font = Font.Detail.textname
             }
         }
     }
@@ -308,7 +322,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
             mapButton.heightAnchor.constraint(equalToConstant: 30),
             ])
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             NSLayoutConstraint.activate([
                 (mainView?.heightAnchor.constraint(equalToConstant: 350))!,
                 photoImage.widthAnchor.constraint(equalToConstant: 300),
@@ -379,7 +393,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
     
     // MARK: - Tableview
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             if (section == 0) {
                 return 15
             }
@@ -388,7 +402,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             if (section == 0) {
                 let vw = UIView()
                 vw.backgroundColor = Color.LGrayColor
@@ -710,7 +724,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
     func callPhone() {
         
         let phoneNo : String?
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             
             if (formController == "Vendors") || (formController == "Employee") {
                 phoneNo = t11!
@@ -1058,7 +1072,7 @@ class LeadDetail: UIViewController, MFMailComposeViewControllerDelegate {
         
         if segue.identifier == "editFormSegue" {
             guard let controller = segue.destination as? EditData else { return }
-            
+
             if (formController == "Leads") {
                 
                 if (self.status == "Edit") {
@@ -1232,15 +1246,22 @@ extension LeadDetail: UITableViewDataSource {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as UITableViewCell
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.textLabel?.font = Font.Detail.celltitlePad
             cell.detailTextLabel?.font = Font.Detail.cellsubtitlePad
         } else {
             cell.textLabel?.font = Font.Detail.celltitle
             cell.detailTextLabel?.font = Font.Detail.cellsubtitle
         }
-        cell.textLabel?.textColor = .black
-        cell.detailTextLabel?.textColor = .black
+        
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor = .clear
+            cell.textLabel?.textColor = .label
+            cell.detailTextLabel?.textColor = .label
+        } else {
+            cell.textLabel?.textColor = .black
+            cell.detailTextLabel?.textColor = .black
+        }
         
         
         if (tableView == self.listTableView) {
@@ -1262,7 +1283,7 @@ extension LeadDetail: UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! TableViewCell
             cell.customImageView.isHidden = true //fix
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 cell.leadtitleDetail!.font = Font.Detail.ipadnewstitle
                 cell.leadsubtitleDetail!.font = Font.Detail.ipadnewssubtitle
                 cell.leadreadDetail!.font = Font.Detail.ipadnewsdetail
@@ -1285,8 +1306,7 @@ extension LeadDetail: UITableViewDataSource {
             cell.customImagelabel.backgroundColor = .clear
             cell.leadtitleDetail!.text = "\(self.formController!) News: \(self.lnewsTitle!)"
             cell.leadtitleDetail!.numberOfLines = 0
-            cell.leadtitleDetail!.textColor = .black
-            cell.leadsubtitleDetail!.text = "Comments"
+                        cell.leadsubtitleDetail!.text = "Comments"
             
             //--------------------------------------------------------------
             
@@ -1317,14 +1337,19 @@ extension LeadDetail: UITableViewDataSource {
             }
             
             //--------------------------------------------------------------
-            cell.leadsubtitleDetail.textColor = .gray
             
             cell.leadreadDetail.text = "Read more"
-            cell.leadreadDetail.textColor = Color.BlueColor
-            
             cell.leadnewsDetail.text = self.comments
             cell.leadnewsDetail.numberOfLines = 0
-            cell.leadnewsDetail.textColor = .darkGray
+            
+            if #available(iOS 13.0, *) {
+                cell.leadtitleDetail!.textColor = .label
+                cell.leadsubtitleDetail.textColor = .systemGray
+                cell.leadreadDetail.textColor = .systemBlue
+                cell.leadnewsDetail.textColor = .label
+            } else {
+   
+            }
             
             return cell
             

@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
 
 class UserProfileListCell: UICollectionViewCell {
     
@@ -89,7 +89,7 @@ class UserProfileListCell: UICollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "10"
-        label.textColor = .blue
+        label.textColor = .systemBlue
         return label
     }()
     

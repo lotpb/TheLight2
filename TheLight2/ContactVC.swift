@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Contacts
+//import Contacts
 import ContactsUI
 
 private func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
@@ -35,7 +35,11 @@ class ContactVC: UIViewController {
     
     @IBOutlet weak private var tableView: UITableView!
     @IBOutlet weak var noContactsLabel: UILabel!
-    @IBOutlet weak private var searchBar: UISearchBar!
+//    @IBOutlet weak private var searchBar: UISearchBar!
+    
+    //search
+    private var searchController: UISearchController!
+    private var resultsController = UITableViewController()
     
     // data
     var contacts = [CNContact]()
@@ -44,7 +48,7 @@ class ContactVC: UIViewController {
     
     private var authStatus: CNAuthorizationStatus = .denied {
         didSet { // switch enabled search bar, depending contacts permission
-            searchBar.isUserInteractionEnabled = authStatus == .authorized
+            //searchBar.isUserInteractionEnabled = authStatus == .authorized
             if authStatus == .authorized { // all search
                 contacts = fetchContacts("")
                 tableView.reloadData()
@@ -54,7 +58,13 @@ class ContactVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.extendedLayoutIncludesOpaqueBars = true
         
+        if #available(iOS 13.0, *) {
+            view.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
         setupTableView()
         setupNavigation()
     }
@@ -103,24 +113,41 @@ class ContactVC: UIViewController {
 
     func setupNavigation() {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        navigationController?.navigationBar.prefersLargeTitles = true
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action:#selector(createNewContact))
+        navigationItem.rightBarButtonItems = [addButton]
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight - Contacts"
         } else {
             navigationItem.title = "Contacts"
         }
-        self.navigationItem.largeTitleDisplayMode = .always
-
-        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action:#selector(createNewContact))
-        navigationItem.rightBarButtonItems = [addButton]
+        
+        searchController = UISearchController(searchResultsController: resultsController)
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.sizeToFit()
+        searchController.obscuresBackgroundDuringPresentation = false
     }
     
     func setupTableView() {
-        self.tableView!.delegate = self
-        self.tableView!.dataSource = self
-        self.tableView!.backgroundColor = Color.LGrayColor
-        self.tableView!.rowHeight = UITableView.automaticDimension
-        self.tableView?.estimatedRowHeight = 60
+        
         self.tableView.register(UINib(nibName: "ContactTableViewCell", bundle: nil), forCellReuseIdentifier: "ContactTableViewCell")
+
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = Color.LGrayColor
+        }
+        self.tableView!.tableFooterView = UIView(frame: .zero)
+        
+        resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
+        resultsController.tableView.backgroundColor = Color.LGrayColor
+        resultsController.tableView.sizeToFit()
+        resultsController.tableView.clipsToBounds = true
+        resultsController.tableView.dataSource = self
+        //resultsController.tableView.delegate = self
+        resultsController.tableView.tableFooterView = UIView(frame: .zero)
     }
     
     func requestAccessToContacts(_ completion: @escaping (_ success: Bool) -> Void) {
@@ -205,8 +232,37 @@ class ContactVC: UIViewController {
     
     // MARK: - Segues
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        /*
         guard let dvc = segue.destination as? CreateContactVC else { return }
-            dvc.type = .cnContact
+            dvc.type = .cnContact */
+        
+        if
+            segue.identifier == "EditFriendSegue",
+            // 1
+            let cell = sender as? ContactTableViewCell,
+            let indexPath = tableView.indexPath(for: cell),
+            let _ = segue.destination as? CreateContactVC {
+            let friend = contactEntry[indexPath.row]
+            // 2
+            let store = CNContactStore()
+            // 3
+            let predicate = CNContact.predicateForContacts(matchingEmailAddress: friend.name)
+            // 4
+            let keys = [CNContactPhoneNumbersKey as CNKeyDescriptor]
+            // 5
+            if
+                let contacts = try? store.unifiedContacts(matching: predicate, keysToFetch: keys),
+                let contact = contacts.first,
+                let _ = contact.phoneNumbers.first {
+                // 6
+                /*
+ 
+                 friend.storedContact = contact.mutableCopy() as? CNMutableContact
+                 friend.phoneNumberField = contactPhone
+                 friend.identifier = contact.identifier*/
+            }
+            //CreateContactVC. = friend
+        }
     }
 }
 //-----------------------end------------------------------
@@ -231,6 +287,11 @@ extension ContactVC: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     
         let cell = tableView.dequeueReusableCell(withIdentifier: "ContactTableViewCell", for: indexPath) as! ContactTableViewCell
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
         
         //cell.selectionStyle = .none
         cell.accessoryType = .disclosureIndicator
@@ -243,7 +304,7 @@ extension ContactVC: UITableViewDataSource {
     }
 }
 
-extension ContactVC: UITableViewDelegate {
+extension ContactVC {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
@@ -260,5 +321,17 @@ extension ContactVC: UITableViewDelegate {
         contactViewController.allowsActions = false
         //4
         navigationController?.pushViewController(contactViewController, animated: true)
+    }
+}
+
+extension ContactVC: UISearchResultsUpdating {
+    
+    func updateSearchResults(for searchController: UISearchController) {
+    
+        /*
+        filteredTitles.removeAll(keepingCapacity: false)
+        let searchBar = searchController.searchBar
+        let scope = searchBar.scopeButtonTitles![searchBar.selectedScopeButtonIndex]
+        filterContentForSearchText(searchText: searchController.searchBar.text!, scope: scope) */
     }
 }

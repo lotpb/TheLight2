@@ -8,7 +8,7 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 
 class ProductVC: UIViewController {
     
@@ -48,7 +48,6 @@ class ProductVC: UIViewController {
         self.extendedLayoutIncludesOpaqueBars = true
 
         setupNavigation()
-        setupSearch()
         loadData()
         setupTableView()
         self.tableView!.addSubview(self.refreshControl)
@@ -84,36 +83,30 @@ class ProductVC: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    private func setupSearch() {
+    private func setupNavigation() {
+        
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newData))
+        navigationItem.title = "Products"
+        //self.navigationItem.largeTitleDisplayMode = .always
         
         searchController = UISearchController(searchResultsController: resultsController)
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.scopeButtonTitles = searchScope
+        searchController.searchBar.sizeToFit()
+        searchController.obscuresBackgroundDuringPresentation = false
+        
         if let textfield = searchController.searchBar.value(forKey: "searchField") as? UITextField {
             if let backgroundview = textfield.subviews.first {
-                backgroundview.backgroundColor = UIColor.white
+                backgroundview.backgroundColor = .white
                 backgroundview.layer.cornerRadius = 10
                 backgroundview.clipsToBounds = true
             }
         }
-        searchController.searchBar.scopeButtonTitles = searchScope
-        searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = false
+        
         self.definesPresentationContext = true
-        
-        if #available(iOS 11.0, *) {
-            self.navigationItem.searchController = searchController
-            navigationItem.hidesSearchBarWhenScrolling = false
-        } else {
-            tableView?.tableHeaderView = searchController.searchBar
-        }
-    }
-    
-    private func setupNavigation() {
-        navigationItem.title = "Products"
-        self.navigationItem.largeTitleDisplayMode = .always
-        
-        let addBtn = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newData))
-        //let searchBtn = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchButton))
-        navigationItem.rightBarButtonItems = [addBtn]
     }
     
     func setupTableView() {
@@ -138,7 +131,7 @@ class ProductVC: UIViewController {
     
     // MARK: - NavigationController Hidden
     @objc func hideBar(notification: NSNotification)  {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {
@@ -213,6 +206,9 @@ class ProductVC: UIViewController {
                 let prodTxt = ProdModel(dictionary: dictionary)
                 self.prodlist.append(prodTxt)
                 
+                self.prodlist.sort(by: { (p1, p2) -> Bool in
+                    return p1.products.compare(p2.products) == .orderedAscending
+                })
                 DispatchQueue.main.async(execute: {
                     self.tableView?.reloadData()
                 })
@@ -345,7 +341,7 @@ extension ProductVC: UITableViewDataSource {
         if (defaults.bool(forKey: "parsedataKey")) {
             
             let imageObject = _feedItems.object(at: indexPath.row) as? PFObject
-            if let imageFile = imageObject!.object(forKey: "imageFile") as? PFFile {
+            if let imageFile = imageObject!.object(forKey: "imageFile") as? PFFileObject {
                 imageFile.getDataInBackground { imageData, error in
                     self.selectedImage = UIImage(data: imageData!)
                 }
@@ -386,7 +382,7 @@ extension ProductVC: UITableViewDataSource {
             cell.customImagelabel.text = "Prod"
             cell.customImagelabel.tag = indexPath.row
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 cell.prodtitleLabel!.font = Font.celltitle22m
             } else {
                 cell.prodtitleLabel!.font = Font.celltitle20l
@@ -424,7 +420,7 @@ extension ProductVC: UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
         if (tableView == self.tableView) {
-            if UI_USER_INTERFACE_IDIOM() == .phone {
+            if UIDevice.current.userInterfaceIdiom == .phone  {
                 return 85.0
             } else {
                 return CGFloat.leastNormalMagnitude

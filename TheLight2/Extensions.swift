@@ -43,7 +43,7 @@ enum Color {
         static let buttonColor = Color.twitterBlue
         static let weblinkText = Color.twitterBlue
         static let emaillinkText = #colorLiteral(red: 1, green: 0.1491314173, blue: 0, alpha: 1)
-        static let phonelinkText = UIColor.green
+        static let phonelinkText = UIColor.systemGreen
     }
     enum Lead {
         static let navColor = #colorLiteral(red: 0.07058823529, green: 0.07058823529, blue: 0.07058823529, alpha: 1)

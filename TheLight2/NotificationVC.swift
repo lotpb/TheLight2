@@ -11,6 +11,7 @@ import UserNotifications
 
 class NotificationVC: UIViewController {
     
+    @IBOutlet weak var contentView: UIView!
     @IBOutlet weak var customMessage: UITextField!
     @IBOutlet weak var datePicker: UIDatePicker!
     @IBOutlet weak var frequencySegmentedControl : UISegmentedControl!
@@ -22,25 +23,26 @@ class NotificationVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.extendedLayoutIncludesOpaqueBars = true
+        
+        if #available(iOS 13.0, *) {
+            self.contentView.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
         
         self.customMessage.clearButtonMode = .always
         self.customMessage!.font = celltitle
         self.customMessage.placeholder = "enter notification"
         
-        self.saveButton.setTitleColor(.orange, for: .normal)
-        self.saveButton.backgroundColor = .white
+        self.saveButton.setTitleColor(.white, for: .normal)
+        self.saveButton.backgroundColor = .systemOrange
         self.saveButton.layer.cornerRadius = 24.0
-        self.saveButton.layer.borderColor = UIColor.orange.cgColor
+        self.saveButton.layer.borderColor = UIColor.systemOrange.cgColor
         self.saveButton.layer.borderWidth = 3.0
         
-        UITextField.appearance().tintColor = .orange
-        setupNavigationButtons()
-        if UI_USER_INTERFACE_IDIOM() == .pad {
-            navigationItem.title = "TheLight - Notifications"
-        } else {
-            navigationItem.title = "Notifications"
-        }
-        self.navigationItem.largeTitleDisplayMode = .always
+        UITextField.appearance().tintColor = .systemOrange
+        setupNavigation()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -60,10 +62,18 @@ class NotificationVC: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    private func setupNavigationButtons() {
+    private func setupNavigation() {
+        
+        navigationController?.navigationBar.prefersLargeTitles = true
         let actionButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(NotificationVC.actionButton))
         let editButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(NotificationVC.editButton))
         navigationItem.rightBarButtonItems = [editButton, actionButton]
+        
+        if UIDevice.current.userInterfaceIdiom == .pad  {
+            navigationItem.title = "TheLight - Notifications"
+        } else {
+            navigationItem.title = "Notifications"
+        }
     }
     
     // MARK: - localNotification

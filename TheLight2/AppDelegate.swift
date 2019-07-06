@@ -8,14 +8,14 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 import FirebaseAuth
+import FirebaseCore
 import GoogleSignIn
 import FBSDKLoginKit
-import TwitterKit
 import UserNotifications
-import CoreLocation //geotify
-//import SwiftKeychainWrapper
+import CoreLocation
+//import TwitterKit //geotify //import SwiftKeychainWrapper
 
 
 @UIApplicationMain
@@ -36,19 +36,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     static let geoCoder = CLGeocoder()
     /*
     var demoItems: [DemoItems] = [
-        DemoItems.beacon,
-        DemoItems.locationOnce,
-        DemoItems.locationUpdating,
-        DemoItems.heading,
-        DemoItems.significantChange,
-        DemoItems.visit
+        DemoItems.beacon, DemoItems.locationOnce, DemoItems.locationUpdating, DemoItems.heading,
+        DemoItems.significantChange,DemoItems.visit
     ]
     var selectedLocationService: DemoItems = DemoItems.none */
-    
-    override init() {
-        FirebaseApp.configure()
-        Database.database().isPersistenceEnabled = true
-    }
     
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -87,8 +78,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
             Parse.initialize(with: configuration)
         } else {
             /// MARK: - Firebase
-            //FirebaseApp.configure()
-            // Database.database().isPersistenceEnabled = true
+            FirebaseApp.configure()
+            Database.database().isPersistenceEnabled = true
             FirebaseRef.databaseRoot.keepSynced(true)
         }
 
@@ -124,14 +115,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
             for item in items!{
                 item.imageInsets = .init(top: 2, left: 0, bottom: 1, right: 0)
             }
-        } 
+        }
         
         /// MARK: - Facebook Sign-in
-        FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
+        ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
         /// MARK: - Google Sign-in
-        GIDSignIn.sharedInstance().clientID = FirebaseApp.app()?.options.clientID
+        GIDSignIn.sharedInstance().clientID = FirebaseApp.app()!.options.clientID
         /// MARK: - Twitter Sign-in
-        TWTRTwitter.sharedInstance().start(withConsumerKey:"hbgrlOXMyIalr90tDIsDlmrGl", consumerSecret:"hHVY3NFbW8PahFGVceiRb2WofvXeWua3uxh9eDw8WSKA3zrIjA")
+        //TWTRTwitter.sharedInstance().start(withConsumerKey:"hbgrlOXMyIalr90tDIsDlmrGl", consumerSecret:"hHVY3NFbW8PahFGVceiRb2WofvXeWua3uxh9eDw8WSKA3zrIjA")
         
         customizeAppearance()
         registerCategories()
@@ -170,50 +161,48 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     /// MARK: - Google/Facebook
 
     internal func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        // not sure if twitter works
+        /*
         if TWTRTwitter.sharedInstance().application(app, open: url, options: options) {
             return true
-        }
+        } */
         
-        let handled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as? String, annotation: options[.annotation])
+        let handled = ApplicationDelegate.shared.application(app, open: url, sourceApplication: options[.sourceApplication] as? String, annotation: options[.annotation])
         
         GIDSignIn.sharedInstance().handle(url, sourceApplication: options[.sourceApplication] as? String, annotation: options[.annotation])
         
         return handled
     }
     
-    // MARK:
-    
-    func applicationWillResignActive(_ application: UIApplication) {
-        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-        // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
-    }
-
-    func applicationDidEnterBackground(_ application: UIApplication) {
-        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    }
-
-    func applicationWillEnterForeground(_ application: UIApplication) {
-        // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-    }
-    
     // MARK: - Facebook
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-        FBSDKAppEvents.activateApp()
+        AppEvents.activateApp()
         application.applicationIconBadgeNumber = 0
         center.removeAllPendingNotificationRequests()
         center.removeAllDeliveredNotifications()
         
     }
     
-    // MARK:
-
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
+    
+    // MARK: UISceneSession Lifecycle
+    /*
+    @available(iOS 13.0, *)
+     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+         // Called when a new scene session is being created.
+        // Use this method to select a configuration to create the new scene with.
+        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+     }
+    
+    @available(iOS 13.0, *)
+    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
+        // Called when the user discards a scene session.
+        // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
+        // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
+    } */
     
     
     // MARK: - Music Controller
@@ -296,17 +285,25 @@ extension AppDelegate {
     
     /// MARK: - App Theme Customization
     func customizeAppearance() {
-        
+        /*
         var preferredStatusBarStyle : UIStatusBarStyle {
             return .lightContent
-        }
+        } */
         
-        UINavigationBar.appearance().tintColor = .gray
+        UINavigationBar.appearance().tintColor = .systemGray
         UINavigationBar.appearance().barTintColor = .black
         UINavigationBar.appearance().isTranslucent = false
         UINavigationBar.appearance().prefersLargeTitles = true
-        UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
-        UINavigationBar.appearance().largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
+        if #available(iOS 13.0, *) {
+            UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.label]
+        } else {
+            UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
+        }
+        if #available(iOS 13.0, *) {
+            UINavigationBar.appearance().largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.label]
+        } else {
+            UINavigationBar.appearance().largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
+        }
         
         let attrsNormal = [
             NSAttributedString.Key.foregroundColor: UIColor.lightGray,
@@ -318,18 +315,26 @@ extension AppDelegate {
         ]
         UITabBarItem.appearance().setTitleTextAttributes(attrsNormal, for: .normal)
         UITabBarItem.appearance().setTitleTextAttributes(attrsSelected, for: .selected)
-        UITabBar.appearance().barTintColor = .white
+        if #available(iOS 13.0, *) {
+            UITabBar.appearance().barTintColor = .systemBackground
+        } else {
+            UITabBar.appearance().barTintColor = .white
+        }
         UITabBar.appearance().tintColor = Color.twitterBlue
         UITabBar.appearance().isTranslucent = false
         
         UIToolbar.appearance().barTintColor = Color.toolbarColor //Color.DGrayColor
-        UIToolbar.appearance().tintColor = .white
+        if #available(iOS 13.0, *) {
+            UIToolbar.appearance().tintColor = .systemBackground
+        } else {
+            UIToolbar.appearance().tintColor = .white
+        }
         UIToolbar.appearance().isTranslucent = false
         
         UISearchBar.appearance().barTintColor = .white
         UISearchBar.appearance().tintColor = .white
-       // UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = [NSAttributedString.Key.foregroundColor.rawValue: UIColor.gray]
-        UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).textColor = UIColor.gray
+       // UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = [NSAttributedString.Key.foregroundColor.rawValue: UIColor.systemGray]
+        UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).textColor = UIColor.systemGray
 
     }
     

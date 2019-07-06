@@ -13,6 +13,7 @@ class UserViewCell: UICollectionViewCell {
     
     var user: UserModel? {
         didSet {
+
             guard let profileImageUrl = user?.profileImageUrl else {return}
             customImageView.loadImage(urlString: profileImageUrl)
             usertitleLabel.text = user?.username
@@ -32,8 +33,12 @@ class UserViewCell: UICollectionViewCell {
     let usertitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.backgroundColor = .white
-        label.textColor = .black
+        if #available(iOS 13.0, *) {
+            label.backgroundColor = .systemBackground
+            label.textColor = .label
+        } else {
+            // Fallback on earlier versions
+        }
         label.textAlignment = .center
         label.font = Font.celltitle14m
         label.adjustsFontSizeToFitWidth = true
@@ -41,7 +46,7 @@ class UserViewCell: UICollectionViewCell {
     }()
     
     let loadingSpinner: UIActivityIndicatorView = {
-        let aiv = UIActivityIndicatorView(style: .whiteLarge)
+        let aiv = UIActivityIndicatorView(style: .medium)
         aiv.translatesAutoresizingMaskIntoConstraints = false
         aiv.hidesWhenStopped = true
         return aiv

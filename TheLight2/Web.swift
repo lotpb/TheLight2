@@ -55,7 +55,7 @@ final class Web: UIViewController, UISplitViewControllerDelegate, SFSafariViewCo
     override func viewDidLoad() {
         super.viewDidLoad()
         // MARK: - SplitView
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             self.extendedLayoutIncludesOpaqueBars = true
         }
         self.splitViewController?.maximumPrimaryColumnWidth = 300
@@ -66,6 +66,9 @@ final class Web: UIViewController, UISplitViewControllerDelegate, SFSafariViewCo
         self.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
         self.navigationItem.leftItemsSupplementBackButton = true
         self.navigationItem.largeTitleDisplayMode = .never
+        
+        //toolBar.barTintColor = .red
+        toolBar.tintColor = .systemGray
         
         backButton.isEnabled = false
         forwardButton.isEnabled = false

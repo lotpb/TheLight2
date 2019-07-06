@@ -20,7 +20,11 @@ class PlaceFeedCell: UICollectionViewCell, UICollectionViewDelegateFlowLayout {
         let layout = UICollectionViewFlowLayout()
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.translatesAutoresizingMaskIntoConstraints = false
-        cv.backgroundColor = Color.Mile.collectColor
+        if #available(iOS 13.0, *) {
+            cv.backgroundColor = .systemFill
+        } else {
+            cv.backgroundColor = Color.Mile.collectColor
+        }
         cv.dataSource = self
         cv.delegate = self
         return cv
@@ -28,7 +32,7 @@ class PlaceFeedCell: UICollectionViewCell, UICollectionViewDelegateFlowLayout {
     
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
-        refreshControl.backgroundColor = .white //Color.News.navColor
+        refreshControl.backgroundColor = .clear //Color.News.navColor
         refreshControl.tintColor = .lightGray
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor.lightGray]
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh", attributes: attributes)
@@ -93,15 +97,27 @@ extension PlaceFeedCell: UICollectionViewDataSource {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! PlaceCell
         
-        cell.backgroundColor = Color.Mile.cellColor
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor = .systemBackground
+        } else {
+            cell.backgroundColor = Color.Mile.cellColor
+        } 
         cell.layer.cornerRadius = 8.0
         cell.layer.borderWidth = 1.0
         cell.layer.borderColor = Color.Mile.cellborderColor.cgColor
         
-        cell.miletextLabel.textColor = .darkGray
-        cell.costTextLabel.textColor = .darkGray
-        cell.titleTimeLabel.textColor = .darkGray
-        cell.subtitleTimeLabel.textColor = .darkGray
+        
+        if #available(iOS 13.0, *) {
+            cell.miletextLabel.textColor = .systemGray
+            cell.costTextLabel.textColor = .systemGray
+            cell.titleTimeLabel.textColor = .systemGray
+            cell.subtitleTimeLabel.textColor = .systemGray
+        } else {
+            cell.miletextLabel.textColor = .darkGray
+            cell.costTextLabel.textColor = .darkGray
+            cell.titleTimeLabel.textColor = .darkGray
+            cell.subtitleTimeLabel.textColor = .darkGray
+        }
         
         cell.mileLabel.font = Font.celltitle22b
         cell.miletextLabel.font = Font.celltitle12r
@@ -128,7 +144,7 @@ extension PlaceFeedCell: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             let size = CGSize.init(width: 420, height: 475)
             return size
         } else {
@@ -146,7 +162,7 @@ extension PlaceFeedCell: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             return .init(top: 20, left: 20, bottom: 20, right: 20)
         } else {
             return .init(top: 20, left: 0, bottom: 20, right: 0)

@@ -7,7 +7,8 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
 import Parse
 import MapKit
 import CoreLocation
@@ -50,7 +51,7 @@ class UserProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLay
     //parse
     var _feedItems = NSMutableArray()
     var imageObject :PFObject!
-    var imageFile :PFFile!
+    var imageFile :PFFileObject!
     var user : PFUser?
     
     var followingNumber: Int?
@@ -74,7 +75,7 @@ class UserProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLay
     
     let userDetailImageview: CustomImageView = { //firebase only
         let imageView = CustomImageView()
-        imageView.backgroundColor = .red
+        imageView.backgroundColor = .systemRed
         imageView.contentMode = .scaleAspectFill //.scaleAspectFill //.scaleAspectFit
         imageView.isUserInteractionEnabled = true
         imageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -154,7 +155,11 @@ class UserProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLay
         
         //collectionView?.contentInset = .init(top: 50,left: 50,bottom: 0,right: 50)
 
-        collectionView?.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            collectionView?.backgroundColor = .systemGroupedBackground
+        } else {
+            collectionView?.backgroundColor = .white
+        }
         collectionView?.register(UserProfileHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "headerId")
         collectionView?.register(UserProfileGridCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.register(UserProfileListCell.self, forCellWithReuseIdentifier: mapId)
@@ -290,7 +295,7 @@ class UserProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLay
             let width = (view.frame.width - 2) / 3
             return .init(width: width, height: width)
         } else {
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 return .init(width: 700, height: 525)
             } else {
                 let width = (view.frame.width - 2)
@@ -317,7 +322,7 @@ class UserProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLay
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedItems.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     
                     guard let imageData = imageData else {return}
@@ -342,7 +347,7 @@ class UserProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLay
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedItems.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     
                     guard let imageData = imageData else {return}
@@ -426,7 +431,7 @@ class UserProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLay
             socialText = ((_feedItems.object(at: (indexPath! as NSIndexPath).row) as AnyObject).value(forKey: "newsTitle") as? String)!
             
             imageObject = _feedItems.object(at: ((indexPath as NSIndexPath?)?.row)!) as? PFObject
-            imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             imageFile.getDataInBackground { imageData, error in
                 
                 self.selectedImage = UIImage(data: imageData!)
@@ -530,7 +535,7 @@ class UserProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLay
             }
             
             imageObject = _feedItems.object(at: indexPath.row) as? PFObject
-            imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             imageFile.getDataInBackground { (imageData: Data?, error: Error?) -> Void in
                 self.selectedImage = UIImage(data: imageData! as Data)
                 vc.objectId = (self._feedItems[indexPath.row] as AnyObject).value(forKey: "objectId") as? String

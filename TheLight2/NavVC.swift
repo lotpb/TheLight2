@@ -14,8 +14,6 @@ class NavVC: UINavigationController, PlayerVCDelegate  {
     //MARK: Properties
     lazy var playVC: PlayVC = {
         let pvc: PlayVC = self.storyboard?.instantiateViewController(withIdentifier: "PlayVC") as! PlayVC
-        
-        //pvc.videoURL = "" //"http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"
         pvc.view.frame = .init(origin: self.hiddenOrigin, size: UIScreen.main.bounds.size)
         pvc.delegate = self
         return pvc
@@ -28,14 +26,14 @@ class NavVC: UINavigationController, PlayerVCDelegate  {
         return st
     }()
         let hiddenOrigin: CGPoint = {
-        let y = UIScreen.main.bounds.height - (UIScreen.main.bounds.width * 9 / 32) - 10
+        let y = UIScreen.main.bounds.height - (UIScreen.main.bounds.width * 9 / 32) - 80
         let x = -UIScreen.main.bounds.width
         let coordinate = CGPoint.init(x: x, y: y)
         return coordinate
     }()
     let minimizedOrigin: CGPoint = {
         let x = UIScreen.main.bounds.width/2 - 10
-        let y = UIScreen.main.bounds.height - (UIScreen.main.bounds.width * 9 / 32) - 10
+        let y = UIScreen.main.bounds.height - (UIScreen.main.bounds.width * 9 / 32) - 80
         let coordinate = CGPoint.init(x: x, y: y)
         return coordinate
     }()

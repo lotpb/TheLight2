@@ -8,7 +8,9 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
+import FirebaseStorage
+import FirebaseAuth
 import MobileCoreServices //kUTTypeImage
 import AVKit
 import AVFoundation
@@ -42,7 +44,7 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
     var newsvideourl : String?
     
     // Parse
-    var file : PFFile!
+    var file : PFFileObject!
     var uploadData : Data!
     
     var videoURL : URL?
@@ -50,7 +52,7 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
     let progress = Progress(totalUnitCount: 1)
     
     let activityIndicator: UIActivityIndicatorView = {
-        let aiv = UIActivityIndicatorView(style: .whiteLarge)
+        let aiv = UIActivityIndicatorView(style: .medium)
         aiv.translatesAutoresizingMaskIntoConstraints = false
         aiv.hidesWhenStopped = true
         return aiv
@@ -69,7 +71,11 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
     let commentDetail: UITextView = {
         let textView = UITextView()
         textView.translatesAutoresizingMaskIntoConstraints = false
-        textView.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            textView.backgroundColor = .systemBackground
+        } else {
+            textView.backgroundColor = .white
+        }
         textView.autocorrectionType = .yes
         textView.dataDetectorTypes = .all
         return textView
@@ -89,9 +95,10 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("Clear", for: .normal)
-        button.tintColor = Color.DGrayColor
+        button.backgroundColor = .systemBlue
+        button.tintColor = .white //Color.DGrayColor
         button.layer.cornerRadius = 12.0
-        button.layer.borderColor = Color.DGrayColor.cgColor
+        button.layer.borderColor = UIColor.systemBlue.cgColor //Color.DGrayColor.cgColor
         button.layer.borderWidth = 2.0
         button.addTarget(self, action: #selector(clearBtn), for: .touchUpInside)
         return button
@@ -101,9 +108,10 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("Select Picture", for: .normal)
-        button.tintColor = Color.DGrayColor
+        button.backgroundColor = .systemBlue
+        button.tintColor = .white //Color.DGrayColor
         button.layer.cornerRadius = 12.0
-        button.layer.borderColor = Color.DGrayColor.cgColor
+        button.layer.borderColor = UIColor.systemBlue.cgColor //Color.DGrayColor.cgColor
         button.layer.borderWidth = 2.0
         button.addTarget(self, action: #selector(selectImage), for: .touchUpInside)
         return button
@@ -152,7 +160,11 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
     
     func setupForm() {
         
-        self.mainView.backgroundColor = Color.LGrayColor
+        if #available(iOS 13.0, *) {
+            self.mainView.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+            self.mainView.backgroundColor = Color.LGrayColor
+        }
         //self.activityIndicator.isHidden = true
         self.commentDetail.delegate = self
         progressView.isHidden = true
@@ -178,7 +190,7 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
     
     func setupFonts() {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad {
             self.commentTitle!.font = Font.celltitle18r
             self.commentDetail.font = Font.celltitle18r
             self.commentSorce.font = Font.celltitle18r
@@ -223,7 +235,7 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
             ])
         
         commentTitle.translatesAutoresizingMaskIntoConstraints = false
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad {
             commentTitle.widthAnchor.constraint(equalToConstant: 450).isActive = true
         } else {
             commentTitle.widthAnchor.constraint(equalToConstant: 338).isActive = true
@@ -283,7 +295,7 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
             if (isPickImage == true) { //image
                 if (defaults.bool(forKey: "parsedataKey")) {
                     uploadData = self.newsImageView.image?.jpegData(compressionQuality: 0.9)
-                    file = PFFile(name: "img", data: uploadData!)
+                    file = PFFileObject(name: "img", data: uploadData!)
                 } else {
                     //Firebase
                     uploadToFirebaseStorageUsingImage(image: newsImage, completion: { (imageUrl) in
@@ -292,7 +304,7 @@ class UploadController: UIViewController, UITextViewDelegate, MFMailComposeViewC
                 }
             } else { //video
                 if (defaults.bool(forKey: "parsedataKey")) {
-                    file = PFFile(name: "movie.mp4", data: FileManager.default.contents(atPath: videoURL!.path)!)
+                    file = PFFileObject(name: "movie.mp4", data: FileManager.default.contents(atPath: videoURL!.path)!)
                 } else {
                     //Firebase
                     handleVideoSelectedForUrl(videoURL!)

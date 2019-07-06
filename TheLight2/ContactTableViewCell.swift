@@ -40,7 +40,12 @@ class ContactTableViewCell: UITableViewCell {
     
     func configureWithContactEntry(_ contact: ContactEntry) {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if #available(iOS 13.0, *) {
+            contactNameLabel.textColor = .systemBlue
+        } else {
+            // Fallback on earlier versions
+        }
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             contactNameLabel.font = Font.celltitle22m
             contactEmailLabel.font = Font.celltitle20l
             contactPhoneLabel.font = Font.celltitle20l

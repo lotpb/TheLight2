@@ -146,9 +146,9 @@ class PlaceCell: UICollectionViewCell {
     lazy var mapViewView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
-        view.layer.borderColor = #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1)     //Color.LGrayColor.cgColor
-        view.layer.borderWidth = 1.5
-        view.layer.masksToBounds = true
+        //view.layer.borderColor = #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1)     //Color.LGrayColor.cgColor
+        //view.layer.borderWidth = 1.5
+        //view.layer.masksToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -178,7 +178,7 @@ class PlaceCell: UICollectionViewCell {
     let mileLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "" //10.1"
+        label.text = "0.0"
         label.textAlignment = .left
         return label
     }()
@@ -195,7 +195,7 @@ class PlaceCell: UICollectionViewCell {
         let label = UILabel()
         label.text = "Sat"
         label.numberOfLines = 1
-        label.backgroundColor = Color.Mile.calenderColor
+        label.backgroundColor = .red
         label.textColor = .white
         label.textAlignment = .center
         label.layer.borderColor = Color.Mile.borderColor.cgColor
@@ -211,6 +211,7 @@ class PlaceCell: UICollectionViewCell {
         label.numberOfLines = 1
         label.backgroundColor = .white
         label.textAlignment = .center
+        label.textColor = .black
         label.layer.borderColor = Color.Mile.borderColor.cgColor
         label.layer.borderWidth = 1
         label.layer.masksToBounds = true
@@ -223,7 +224,7 @@ class PlaceCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "$0.00"
         label.textAlignment = .right
-        //label.textColor = .blue
+        //label.textColor = .systemBlue
         return label
     }()
     
@@ -232,15 +233,20 @@ class PlaceCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "POTENTAL"
         label.textAlignment = .right
-        //label.textColor = .blue
+        //label.textColor = .systemBlue
         return label
     }()
     
     lazy var titleView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
-        view.layer.borderColor = Color.Mile.borderColor.cgColor
-        view.layer.borderWidth = 1
+        if #available(iOS 13.0, *) {
+            view.backgroundColor = .systemGray6
+            view.layer.borderColor = UIColor.systemGray6.cgColor
+        } else {
+            view.backgroundColor = .white
+            view.layer.borderColor = Color.Mile.borderColor.cgColor
+        }
+        view.layer.borderWidth = 0.5
         view.layer.masksToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -248,9 +254,14 @@ class PlaceCell: UICollectionViewCell {
     
     lazy var subtitleView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
-        view.layer.borderColor = Color.Mile.borderColor.cgColor
-        view.layer.borderWidth = 1
+        if #available(iOS 13.0, *) {
+            view.backgroundColor = .systemGray6
+            view.layer.borderColor = UIColor.systemGray6.cgColor
+        } else {
+            view.backgroundColor = .white
+            view.layer.borderColor = Color.Mile.borderColor.cgColor
+        }
+        view.layer.borderWidth = 0.5
         view.layer.masksToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -260,7 +271,7 @@ class PlaceCell: UICollectionViewCell {
         let label = UILabel()
         label.text = ""
         label.numberOfLines = 1
-        label.backgroundColor = .white
+        label.backgroundColor = .clear
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -269,7 +280,7 @@ class PlaceCell: UICollectionViewCell {
         let label = UILabel()
         label.text = ""
         label.numberOfLines = 1
-        label.backgroundColor = .white
+        label.backgroundColor = .clear
         label.textAlignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -279,7 +290,7 @@ class PlaceCell: UICollectionViewCell {
         let label = UILabel()
         label.text = ""
         label.numberOfLines = 1
-        label.backgroundColor = .white
+        label.backgroundColor = .clear
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -288,7 +299,7 @@ class PlaceCell: UICollectionViewCell {
         let label = UILabel()
         label.text = ""
         label.numberOfLines = 1
-        label.backgroundColor = .white
+        label.backgroundColor = .clear
         label.textAlignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -298,7 +309,7 @@ class PlaceCell: UICollectionViewCell {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isUserInteractionEnabled = true
-        button.tintColor = .green
+        button.tintColor = .systemGreen
         button.setImage(#imageLiteral(resourceName: "thumb").withRenderingMode(.alwaysTemplate), for: .normal)
         return button
     }()
@@ -508,7 +519,7 @@ extension PlaceCell: MKMapViewDelegate {
         pinView.leftCalloutAccessoryView = button
         
         if annotation.title == "Start"  {
-            pinView.pinTintColor = .green
+            pinView.pinTintColor = .systemGreen
         } else {
             pinView.pinTintColor = .red
         }

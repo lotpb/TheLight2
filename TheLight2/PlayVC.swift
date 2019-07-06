@@ -15,7 +15,8 @@ protocol PlayerVCDelegate {
 import UIKit
 import AVFoundation
 import Parse
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
 
 class PlayVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate {
 
@@ -39,7 +40,7 @@ class PlayVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGe
     //parse
     var _feedItems = NSMutableArray()
     var imageObject: PFObject!
-    var imageFile: PFFile!
+    var imageFile: PFFileObject!
     
     var idLookup: String?
     var uidLookup: String?
@@ -54,7 +55,7 @@ class PlayVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGe
     var subscribeNumber: Int?
     
     let activityIndicator: UIActivityIndicatorView = {
-        let aiv = UIActivityIndicatorView(style: .whiteLarge)
+        let aiv = UIActivityIndicatorView(style: .medium)
         aiv.translatesAutoresizingMaskIntoConstraints = false
         aiv.startAnimating()
         return aiv
@@ -82,7 +83,7 @@ class PlayVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGe
     lazy var videoSlider: UISlider = {
         let slider = UISlider()
         slider.translatesAutoresizingMaskIntoConstraints = false
-        slider.minimumTrackTintColor = .red
+        slider.minimumTrackTintColor = .systemRed
         slider.maximumTrackTintColor = .white
         slider.setThumbImage(UIImage(named: "thumb"), for: .normal)
         slider.addTarget(self, action: #selector(handleSliderChange), for: .valueChanged)
@@ -249,11 +250,11 @@ class PlayVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGe
                 self.containView.alpha = 1
                 self.tableView.alpha = 1
                 self.playerView.transform = CGAffineTransform.identity
-                UIApplication.shared.isStatusBarHidden = true
+                //UIApplication.shared.isStatusBarHidden = true
             })
         case .minimized:
             UIView.animate(withDuration: 0.3, animations: {
-                UIApplication.shared.isStatusBarHidden = false
+                //UIApplication.shared.isStatusBarHidden = false
                 self.minimizeButton.alpha = 0
                 self.containView.alpha = 0
                 self.tableView.alpha = 0
@@ -566,7 +567,7 @@ class PlayVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGe
                 query.cachePolicy = .cacheThenNetwork
                 query.getFirstObjectInBackground {(object: PFObject?, error: Error?) in
                     if error == nil {
-                        if let imageFile = object!.object(forKey: "imageFile") as? PFFile {
+                        if let imageFile = object!.object(forKey: "imageFile") as? PFFileObject {
                             imageFile.getDataInBackground { imageData, error in
                                 
                                 UIView.transition(with: (cell.channelPic), duration: 0.5, options: .transitionCrossDissolve, animations: {
@@ -609,7 +610,7 @@ class PlayVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGe
                 cell.name.text =  String(format: "%@%@", "\(NewText!)", " \(newsView!) views")
                 
                 imageObject = _feedItems.object(at: ((indexPath as NSIndexPath).row) - 1) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile.getDataInBackground { imageData, error in
                     UIView.transition(with: cell.tumbnail, duration: 0.5, options: .transitionCrossDissolve, animations: {
                         cell.tumbnail.image = UIImage(data: imageData!)
@@ -668,7 +669,7 @@ class PlayVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UIGe
             self.imageLookup = (self._feedItems[(indexPath).row - 1] as AnyObject).value(forKey: "username") as? String
             
             imageObject = _feedItems.object(at: indexPath.row - 1) as? PFObject
-            imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             imageFile.getDataInBackground { imageData, error in
                 let imageDetailurl = self.imageFile.url
                 let result1 = imageDetailurl!.contains("movie.mp4")
@@ -1007,7 +1008,7 @@ class headerCell: UITableViewCell {
     let channelSubscribers: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .gray
+        label.textColor = .systemGray
         label.font = Font.celltitle14r
         return label
     }()
@@ -1156,7 +1157,7 @@ class videoCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.systemFont(ofSize: 14)
         label.text = ""
-        label.textColor = .gray
+        label.textColor = .systemGray
         return label
     }()
     

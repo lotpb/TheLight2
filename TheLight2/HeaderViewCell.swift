@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class HeaderViewCell: UITableViewCell {
     
@@ -97,7 +98,7 @@ class HeaderViewCell: UITableViewCell {
     
     func setupViews() {
         
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
 
             self.contentView.addSubview(myLabel1)
             self.contentView.addSubview(myLabel2)

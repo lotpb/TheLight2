@@ -14,7 +14,7 @@ class MenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UIC
         let layout = UICollectionViewFlowLayout()
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.translatesAutoresizingMaskIntoConstraints = false
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cv.backgroundColor = .black
         } else {
             cv.backgroundColor = Color.youtubeRed
@@ -77,7 +77,7 @@ class MenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UIC
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! MenuCell
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.tintColor = .darkGray
         } else {
             cell.tintColor = UIColor.rgb(red: 91, green: 14, blue: 13)
@@ -108,7 +108,7 @@ class MenuCell: CollectionViewCell {
         let iv = UIImageView()
         iv.image = UIImage(named: "home")?.withRenderingMode(.alwaysTemplate)
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             iv.tintColor = .darkGray
         } else {
             iv.tintColor = UIColor.rgb(red: 91, green: 14, blue: 13)
@@ -119,7 +119,7 @@ class MenuCell: CollectionViewCell {
     override var isHighlighted: Bool {
         didSet {
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 imageView1.tintColor = isHighlighted ? UIColor.white : .darkGray
             } else {
                 imageView1.tintColor = isHighlighted ? UIColor.white : UIColor.rgb(red: 91, green: 14, blue: 13)
@@ -129,7 +129,7 @@ class MenuCell: CollectionViewCell {
     
     override var isSelected: Bool {
         didSet {
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 imageView1.tintColor = isSelected ? UIColor.white : .darkGray
             } else {
                 imageView1.tintColor = isSelected ? UIColor.white : UIColor.rgb(red: 91, green: 14, blue: 13)

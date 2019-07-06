@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
 import Parse
 
 class FeaturedAppController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
@@ -23,7 +23,7 @@ class FeaturedAppController: UICollectionViewController, UICollectionViewDelegat
         
         //loadData()
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight Software - Snapshot"
         } else {
             navigationItem.title = "Snapshot"
@@ -36,7 +36,11 @@ class FeaturedAppController: UICollectionViewController, UICollectionViewDelegat
             self.collectionView?.reloadData()
         } 
         
-        collectionView?.backgroundColor = Color.Snap.collectbackColor //UIColor.white
+        if #available(iOS 13.0, *) {
+            collectionView?.backgroundColor = Color.Snap.collectbackColor
+        } else {
+            // Fallback on earlier versions
+        } //UIColor.white
         collectionView?.register(CategoryCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.register(LargeCategoryCell.self, forCellWithReuseIdentifier: largeCellId)
         collectionView?.register(Header.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: headerId)

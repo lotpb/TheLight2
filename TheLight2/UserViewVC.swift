@@ -8,7 +8,8 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
 import MapKit
 import CoreLocation
 import GeoFire
@@ -64,7 +65,7 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        self.extendedLayoutIncludesOpaqueBars = true
         setupNavigation()
         setupTableView()
         loadData()
@@ -74,13 +75,13 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        /*
+        
         //Fix Grey Bar on Bpttom Bar
         if UIDevice.current.userInterfaceIdiom == .phone {
             if let con = self.splitViewController {
-                con.preferredDisplayMode = .primaryOverlay
+                con.preferredDisplayMode = .allVisible
             }
-        } */
+        }
         setMainNavItems()
         setupMap()
     }
@@ -91,7 +92,7 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
     }
     
     private func setupNavigation() {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight - Users"
         } else {
             navigationItem.title = "Users"
@@ -159,13 +160,21 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
         self.tableView!.dataSource = self
         self.tableView!.estimatedRowHeight = 110
         self.tableView!.rowHeight = UITableView.automaticDimension
-        self.tableView!.backgroundColor = .clear
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
         self.tableView!.tableFooterView = UIView(frame: .zero)
         
         self.collectionView.register(UserViewCell.self, forCellWithReuseIdentifier: cellId)
         self.collectionView!.dataSource = self
         self.collectionView!.delegate = self
-        self.collectionView!.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            self.collectionView!.backgroundColor = .systemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
     }
     
     // MARK: - Refresh
@@ -280,12 +289,18 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! UserViewCell
         
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor = .label
+        } else {
+            // Fallback on earlier versions
+        }
+        
         if (defaults.bool(forKey: "parsedataKey")) {
             
             cell.usertitleLabel.text = (_feedItems[indexPath.row] as AnyObject).value(forKey: "username") as? String
             
             let imageObject = _feedItems.object(at: indexPath.row) as! PFObject
-            let imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            let imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             
             cell.loadingSpinner.isHidden = true
             cell.loadingSpinner.startAnimating()
@@ -314,7 +329,7 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
         
         if (defaults.bool(forKey: "parsedataKey")) {
             let imageObject = _feedItems.object(at: indexPath.row) as! PFObject
-            let imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            let imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             
             imageFile!.getDataInBackground { imageData, error in
                 self.selectedImage = UIImage(data: imageData!)
@@ -413,7 +428,7 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
         
         if (defaults.bool(forKey: "parsedataKey")) {
             let imageObject = _feedItems.object(at: indexPath.row) as! PFObject
-            let imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            let imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             imageFile!.getDataInBackground { imageData, error in
                 self.selectedImage = UIImage(data: imageData!)
             }
@@ -444,10 +459,17 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! TableViewCell
         
         cell.selectionStyle = .none
-        cell.usersubtitleLabel!.textColor = .gray
+        
+        if #available(iOS 13.0, *) {
+            cell.usertitleLabel!.textColor = .label
+        } else {
+            // Fallback on earlier versions
+        }
+        
+        cell.usersubtitleLabel!.textColor = .systemGray
         cell.customImagelabel.backgroundColor = .clear //fix
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.usertitleLabel!.font = Font.celltitle20r
             cell.usersubtitleLabel!.font = Font.celltitle16r
         } else {
@@ -459,7 +481,7 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
             
             cell.customImageView.frame = .init(x: 0, y: 0, width: 0, height: 0) //fix
             let imageObject = _feedItems.object(at: indexPath.row) as! PFObject
-            let imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+            let imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
             imageFile!.getDataInBackground { imageData, error in
                 
                 UIView.transition(with: cell.userImageView, duration: 0.5, options: .transitionCrossDissolve, animations: {
@@ -490,13 +512,21 @@ class UserViewVC: UIViewController, UICollectionViewDelegate,  UICollectionViewD
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
         let vw = UIView()
-        vw.backgroundColor = .lightGray
+        if #available(iOS 13.0, *) {
+            vw.backgroundColor = .systemGray6
+        } else {
+            // Fallback on earlier versions
+        }
         //tableView.tableHeaderView = vw
         
         let myLabel1:UILabel = UILabel(frame: .init(x: 10, y: 5, width: tableView.frame.width-10, height: 20))
         myLabel1.numberOfLines = 1
         myLabel1.backgroundColor = .clear
-        myLabel1.textColor = .white
+        if #available(iOS 13.0, *) {
+            myLabel1.textColor = .label
+        } else {
+            // Fallback on earlier versions
+        }
         myLabel1.font = Font.celltitle18m
         vw.addSubview(myLabel1)
         

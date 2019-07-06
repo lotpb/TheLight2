@@ -9,7 +9,8 @@
 import UIKit
 import AVFoundation
 import Parse
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
 
 class CodeGenVC: UIViewController {
     
@@ -22,7 +23,7 @@ class CodeGenVC: UIViewController {
     
     let imageProfile: CustomImageView = {
         let imageView = CustomImageView()
-        imageView.backgroundColor = .white
+        imageView.backgroundColor = .systemGray
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 5
         imageView.layer.masksToBounds = true
@@ -37,7 +38,7 @@ class CodeGenVC: UIViewController {
         button.setTitle("Generate", for: .normal)
         button.titleLabel?.textAlignment = .center
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .orange
+        button.backgroundColor = .systemOrange
         button.addTarget(self, action: #selector(performButtonAction), for: .touchUpInside)
         return button
     }()
@@ -45,9 +46,12 @@ class CodeGenVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        slider.minimumTrackTintColor = .orange
-        slider.thumbTintColor = .orange
+        //self.extendedLayoutIncludesOpaqueBars = true
+        if #available(iOS 13.0, *) {
+            view.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
 
         if (defaults.bool(forKey: "parsedataKey")) {
             let query:PFQuery = PFUser.query()!
@@ -56,7 +60,7 @@ class CodeGenVC: UIViewController {
             query.cachePolicy = .cacheThenNetwork
             query.getFirstObjectInBackground {(object: PFObject?, error: Error?) in
                 if error == nil {
-                    if let imageFile = object!.object(forKey: "imageFile") as? PFFile {
+                    if let imageFile = object!.object(forKey: "imageFile") as? PFFileObject {
                         imageFile.getDataInBackground { imageData, error in
                             self.imageProfile.image = UIImage(data: imageData!)
                         }
@@ -82,9 +86,11 @@ class CodeGenVC: UIViewController {
         self.textField!.font = Font.celltitle18m
         self.textField!.text = defaults.string(forKey: "usernameKey")
         
+        slider.minimumTrackTintColor = .systemOrange
+        slider.thumbTintColor = .systemOrange
+        
         setupNavigation()
         setupForm()
-  
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -104,16 +110,15 @@ class CodeGenVC: UIViewController {
     }
     
     func setupNavigation() {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        navigationController?.navigationBar.prefersLargeTitles = true
+        let addBtn = UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(newDataBtn))
+        navigationItem.rightBarButtonItems = [addBtn]
+        //navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(self.handleLogout))
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight - Membership"
         } else {
             navigationItem.title = "Membership"
         }
-        self.navigationItem.largeTitleDisplayMode = .always
-        
-        let addBtn = UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(newDataBtn))
-        navigationItem.rightBarButtonItems = [addBtn]
-        //navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(self.handleLogout))
     }
     
     func setupForm() {
@@ -124,8 +129,8 @@ class CodeGenVC: UIViewController {
         NSLayoutConstraint.activate([
             self.imageProfile.topAnchor.constraint(equalTo: view.topAnchor, constant: 50),
             self.imageProfile.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            self.imageProfile.widthAnchor.constraint(equalToConstant: 100),
-            self.imageProfile.heightAnchor.constraint(equalToConstant: 100),
+            self.imageProfile.widthAnchor.constraint(equalToConstant: 85),
+            self.imageProfile.heightAnchor.constraint(equalToConstant: 85),
             
             generateBtn.topAnchor.constraint(equalTo: view.topAnchor, constant: 50),
             generateBtn.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor, constant: 0),

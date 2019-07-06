@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
 
 class ReplyTableCell: UITableViewCell {
     
@@ -102,7 +102,7 @@ class ReplyTableCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "10"
-        label.textColor = .blue
+        label.textColor = .systemBlue
         return label
     }()
     

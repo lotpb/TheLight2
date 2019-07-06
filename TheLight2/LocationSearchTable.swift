@@ -39,9 +39,26 @@ class LocationSearchTable : UITableViewController {
         )
         return addressLine
     }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        setupTableView()
+    }
+    
+    func setupTableView() {
+
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        }
+        self.tableView!.tableFooterView = UIView(frame: .zero)
+    }
 }
 //creates a custom MKLocalSearchRequest and gets MKLocalSearchResponse
 extension LocationSearchTable : UISearchResultsUpdating {
+    
     func updateSearchResults(for searchController: UISearchController) {
         guard let mapView = mapView,
             let searchBarText = searchController.searchBar.text else { return }
@@ -69,6 +86,11 @@ extension LocationSearchTable {
     //itterate the data inside the tableView
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell")!
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
         let selectedItem = matchingItems[indexPath.row].placemark
         cell.textLabel?.text = selectedItem.name //selectedItem.locality
         cell.detailTextLabel?.text = parseAddress(selectedItem: selectedItem)

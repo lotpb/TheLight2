@@ -107,7 +107,7 @@ class GeotificationVC: UIViewController, UISplitViewControllerDelegate, RegionsP
     
     private func floatButton() {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             buttonSize = 50
         } else {
             buttonSize = 40
@@ -191,7 +191,7 @@ class GeotificationVC: UIViewController, UISplitViewControllerDelegate, RegionsP
     }
     
     private func setupNavigation() {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.navigationItem.largeTitleDisplayMode = .always
         } else {
             self.navigationItem.largeTitleDisplayMode = .never
@@ -201,7 +201,7 @@ class GeotificationVC: UIViewController, UISplitViewControllerDelegate, RegionsP
     // MARK: - NavigationController Hidden
     @objc func hideBar(notification: NSNotification)  {
         
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {
@@ -342,7 +342,7 @@ class GeotificationVC: UIViewController, UISplitViewControllerDelegate, RegionsP
     }
     
     func updateGeotificationsCount() {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight Software - Geotify: \(geotifications.count)"
         } else {
             navigationItem.title = "Geotify: \(geotifications.count)"
@@ -565,12 +565,12 @@ extension GeotificationVC: MKMapViewDelegate {
         if overlay is MKCircle {
             let renderer = MKCircleRenderer(overlay: overlay)
             renderer.lineWidth = 2.0
-            renderer.strokeColor = .blue
-            renderer.fillColor = UIColor.orange.withAlphaComponent(0.3)
+            renderer.strokeColor = .systemBlue
+            renderer.fillColor = UIColor.systemOrange.withAlphaComponent(0.3)
             return renderer
         } else if overlay is MKPolyline {
             let renderer = MKPolylineRenderer(overlay: overlay)
-            renderer.strokeColor = UIColor.orange
+            renderer.strokeColor = UIColor.systemOrange
             renderer.lineWidth = 3
             return renderer
         }

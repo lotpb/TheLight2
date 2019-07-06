@@ -34,7 +34,7 @@
     private var activity: NSUserActivity!
     
     var activityIndicator: UIActivityIndicatorView = {
-        let aiv = UIActivityIndicatorView(style: .whiteLarge)
+        let aiv = UIActivityIndicatorView(style: .medium)
         aiv.hidesWhenStopped = true
         return aiv
     }()
@@ -149,7 +149,7 @@
         button.setTitle("Speak", for: .normal)
         button.titleLabel?.textAlignment = .center
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .red
+        button.backgroundColor = .systemRed
         button.addTarget(self, action: #selector(speakingBtn), for: .touchUpInside)
         return button
     }()
@@ -161,7 +161,7 @@
         button.setTitle("Speech", for: .normal)
         button.titleLabel?.textAlignment = .center
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .red
+        button.backgroundColor = .systemRed
         button.addTarget(self, action: #selector(speech), for: .touchUpInside)
         return button
     }()
@@ -229,7 +229,7 @@
     lazy var titleButton: UIButton = {
         let button = UIButton(type: .system)
         button.frame = .init(x: 0, y: 0, width: 100, height: 32)
-        if UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiom.pad {
+        if UIDevice.current.userInterfaceIdiom == .pad {
             button.setTitle("TheLight Software - Detail", for: .normal)
         } else {
             button.setTitle("Detail", for: .normal)
@@ -245,7 +245,7 @@
         super.viewDidLoad()
         
         setupViews()
-        setupNavigationButtons()
+        setupNavigation()
         
         
         // MARK: - locationManager
@@ -264,13 +264,7 @@
         
         setupFonts()
         self.subject.text = textviewText
-        if UI_USER_INTERFACE_IDIOM() == .pad {
-            navigationItem.title = "TheLight - Detail"
-        } else {
-            navigationItem.title = "Detail"
-        }
-        UINavigationBar.appearance().largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white, NSAttributedString.Key.font:UIFont.boldSystemFont(ofSize: 26)]
-        self.navigationItem.largeTitleDisplayMode = .always
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -307,13 +301,20 @@
         // Dispose of any resources that can be recreated.
     }
     
-    private func setupNavigationButtons() {
-        //let savedPodcasts = UserDefaults.standard.savedPodcasts()
-        //let hasFavorited = savedPodcasts.index(where: { $0.trackName == self.podcast?.trackName && $0.artistName == self.podcast?.artistName }) != nil
+    private func setupNavigation() {
+        
+        UINavigationBar.appearance().largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white, NSAttributedString.Key.font:UIFont.boldSystemFont(ofSize: 26)]
+        self.navigationItem.largeTitleDisplayMode = .always
         
         let searchButton = UIBarButtonItem(title: "Light", style: .plain, target: self, action: #selector(lightcamera))
         let favButton = UIBarButtonItem(image: #imageLiteral(resourceName: "heart"), style: .plain, target: nil, action: nil)
         navigationItem.rightBarButtonItems = [searchButton, favButton]
+        
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            navigationItem.title = "TheLight - Detail"
+        } else {
+            navigationItem.title = "Detail"
+        }
     }
     
     // MARK: - NavigationController Hidden
@@ -339,7 +340,7 @@
     }
     
     func setupFonts() {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad {
             self.subject.font = Font.Detail.VtextAmount
             self.volume.font = Font.Detail.VtextAmount
             self.pitch.font = Font.Detail.VtextAmount

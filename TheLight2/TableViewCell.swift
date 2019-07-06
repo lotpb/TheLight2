@@ -7,7 +7,8 @@
 //
 
 import UIKit
-import Firebase
+import SwiftUI
+import FirebaseDatabase
 //import Parse
 
 class TableViewCell: UITableViewCell {
@@ -17,7 +18,7 @@ class TableViewCell: UITableViewCell {
     //firebase
     var blogpost: BlogModel? {
         didSet {
-            
+           
             blogtitleLabel.text = blogpost?.postBy
             blogsubtitleLabel.text = blogpost?.subject
             blogmsgDateLabel.text = blogpost?.creationDate.timeAgoDisplay()
@@ -52,7 +53,7 @@ class TableViewCell: UITableViewCell {
     
     var feedItems: Database! {
         didSet {
-            //leadtitleLabel!.text = (_feedItems[indexPath.row] as AnyObject).value(forKey: "LastName") as? String ?? ""
+            
             leadtitleLabel!.text = _feedItems.value(forKey: "LastName") as? String ?? ""
             leadsubtitleLabel!.text = _feedItems.value(forKey: "City") as? String ?? ""
             myLabel10.text = _feedItems.value(forKey: "Date") as? String ?? ""
@@ -81,8 +82,7 @@ class TableViewCell: UITableViewCell {
         didSet {
             
             if (defaults.bool(forKey: "parsedataKey")) {
-                /*
-                */
+               
             } else {
                 
                 leadtitleLabel.text = leadpost?.lastname
@@ -132,6 +132,11 @@ class TableViewCell: UITableViewCell {
     var custpost: CustModel? {
         didSet {
             
+            if #available(iOS 13.0, *) {
+                custtitleLabel.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
             custtitleLabel.text = custpost?.lastname
             
             custsubtitleLabel.text = String(format: "%@ %@ %@", (custpost?.city)!,
@@ -175,7 +180,11 @@ class TableViewCell: UITableViewCell {
     
     var vendpost: VendModel? {
         didSet {
-            
+            if #available(iOS 13.0, *) {
+                vendtitleLabel.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
             vendtitleLabel.text = vendpost?.vendor
             
             if vendpost?.profession == "" {
@@ -208,6 +217,11 @@ class TableViewCell: UITableViewCell {
     var employpost: EmployModel? {
         didSet {
             
+            if #available(iOS 13.0, *) {
+                employtitleLabel.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
             employtitleLabel.text = String(format: "%@ %@ %@", (employpost?.first)!,
                                            (employpost?.lastname)!,
                                            (employpost?.company)!).removeWhiteSpace()

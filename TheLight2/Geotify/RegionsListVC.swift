@@ -64,7 +64,7 @@ class RegionsListVC: UIViewController, UITableViewDataSource, UITableViewDelegat
     private func setupNavigation() {
         
         navigationItem.title = "Regions"
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.navigationItem.largeTitleDisplayMode = .always
         } else {
             self.navigationItem.largeTitleDisplayMode = .never
@@ -82,7 +82,7 @@ class RegionsListVC: UIViewController, UITableViewDataSource, UITableViewDelegat
     
     // MARK: - NavigationController Hidden
     @objc func hideBar(notification: NSNotification)  {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {

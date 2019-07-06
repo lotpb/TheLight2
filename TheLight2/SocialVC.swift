@@ -16,15 +16,23 @@ class SocialVC: UIViewController, UITextViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.extendedLayoutIncludesOpaqueBars = true
         
+        if #available(iOS 13.0, *) {
+            self.view.backgroundColor = .secondarySystemGroupedBackground
+            self.noteTextview.backgroundColor = .systemBackground
+        } else {
+            // Fallback on earlier versions
+        }
         configureNoteTextView()
         noteTextview.delegate = self
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        
+        navigationController?.navigationBar.prefersLargeTitles = true
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight - Social"
         } else {
             navigationItem.title = "Social"
         }
-        self.navigationItem.largeTitleDisplayMode = .always
     }
     
     override func viewWillAppear(_ animated: Bool) {

@@ -26,7 +26,11 @@ final class News: UICollectionViewController, SearchDelegate {
     let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "  Home"
-        label.textColor = .black
+        if #available(iOS 13.0, *) {
+            label.textColor = .label
+        } else {
+            label.textColor = .black
+        }
         label.font = UIFont.systemFont(ofSize: 20)
         return label
     }()
@@ -56,7 +60,7 @@ final class News: UICollectionViewController, SearchDelegate {
         
         //TabBar Badge
         let tabArray = self.tabBarController?.tabBar.items as NSArray?
-        let tabItem = tabArray?.object(at: 3) as? UITabBarItem
+        let tabItem = tabArray?.object(at: 2) as? UITabBarItem
         tabItem?.badgeValue = "New" 
         
         // MARK: NavigationController Hidden
@@ -96,7 +100,11 @@ final class News: UICollectionViewController, SearchDelegate {
         collectionView?.bounces = false
         collectionView?.showsHorizontalScrollIndicator = false
         
-        collectionView?.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            //collectionView?.backgroundColor = .red //.secondarySystemGroupedBackground
+        } else {
+            //collectionView?.backgroundColor = .white
+        }
         collectionView?.register(FeedCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.register(TrendingCell.self, forCellWithReuseIdentifier: trendingCellId)
         collectionView?.register(SubscriptionCell.self, forCellWithReuseIdentifier: subscriptionCellId)
@@ -164,10 +172,14 @@ final class News: UICollectionViewController, SearchDelegate {
     private func setupMenuBar() {
         
         let redView = UIView()
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             redView.backgroundColor = .black
         } else {
-            redView.backgroundColor = UIColor.rgb(red: 230, green: 32, blue: 31)
+            if #available(iOS 13.0, *) {
+                //redView.backgroundColor = .red //.systemGroupedBackground
+            } else {
+                redView.backgroundColor = UIColor.rgb(red: 230, green: 32, blue: 31)
+            }
         }
         
         view.addSubview(redView)

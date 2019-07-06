@@ -171,7 +171,7 @@ class searchCell: UITableViewCell {
     
     lazy var itemLabel: UILabel = {
         let il: UILabel = UILabel.init(frame: .init(x: 48, y: 0, width: self.contentView.bounds.width - 48, height: self.contentView.bounds.height))
-        il.textColor = UIColor.gray
+        il.textColor = .systemGray
         return il
     }()
     

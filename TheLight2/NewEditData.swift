@@ -8,7 +8,7 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 
 class NewEditData: UIViewController, UITextFieldDelegate {
     
@@ -74,7 +74,7 @@ class NewEditData: UIViewController, UITextFieldDelegate {
             self.frm11 = "Active"
         }
 
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = String(format: "%@", "TheLight Software - \(self.formStatus!) \(self.formController!)")
         } else {
             navigationItem.title = String(format: "%@ %@", self.formStatus!, self.formController!)
@@ -86,7 +86,7 @@ class NewEditData: UIViewController, UITextFieldDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.navigationController?.navigationBar.barTintColor = .black
         } else {
             self.navigationController?.navigationBar.barTintColor = Color.Table.labelColor
@@ -633,7 +633,7 @@ extension NewEditData: UITableViewDataSource {
         activeImage.frame = .init(x: 130, y: 10, width: 18, height: 22)
         customImageView.frame = .init(x: 130, y: 10, width: 180, height: 180)
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.textLabel!.font = Font.Stat.celltitlePad
             self.salesman?.font = Font.Stat.celltitlePad
             self.salesNo?.font = Font.Stat.celltitlePad

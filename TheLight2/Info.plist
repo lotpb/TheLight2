@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FirebaseScreenReportingEnabled</key>
-	<false/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -69,10 +67,16 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>FacebookAdvertiserIDCollectionEnabled</key>
+	<true/>
 	<key>FacebookAppID</key>
 	<string>990654514310679</string>
+	<key>FacebookAutoLogAppEventsEnabled</key>
+	<true/>
 	<key>FacebookDisplayName</key>
 	<string>TheLight</string>
+	<key>FirebaseScreenReportingEnabled</key>
+	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>LSApplicationQueriesSchemes</key>
@@ -93,8 +97,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>NSFaceIDUsageDescription</key>
-	<string>This allows you to securely sign into your app.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>BlueTooth</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Can we use your bluetooth?</string>
 	<key>NSCalendarsUsageDescription</key>
@@ -103,6 +107,8 @@
 	<string>Can we use your camera?</string>
 	<key>NSContactsUsageDescription</key>
 	<string>Can we use to your contacts?</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>This allows you to securely sign into your app.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Can we use your location?</string>
 	<key>NSLocationAlwaysUsageDescription</key>

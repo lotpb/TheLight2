@@ -33,7 +33,7 @@ class AddGeotificationVC: UITableViewController {
     private func setupNavigation() {
         navigationItem.rightBarButtonItems = [addButton, zoomButton]
         addButton.isEnabled = false
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.navigationItem.largeTitleDisplayMode = .always
         } else {
             self.navigationItem.largeTitleDisplayMode = .never

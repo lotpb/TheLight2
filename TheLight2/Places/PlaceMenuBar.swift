@@ -12,10 +12,15 @@ class PlaceMenuBar: UIView {
     
     lazy var menuView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
-        view.layer.borderColor = Color.LGrayColor.cgColor
-        view.layer.borderWidth = 1
-        view.layer.masksToBounds = true
+        if #available(iOS 13.0, *) {
+            view.backgroundColor = .systemBackground
+            //view.layer.borderColor = UIColor.systemBackground.cgColor
+        } else {
+            view.backgroundColor = .white
+            //view.layer.borderColor = Color.LGrayColor.cgColor
+        }
+        //view.layer.borderWidth = 1
+        //view.layer.masksToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -24,7 +29,11 @@ class PlaceMenuBar: UIView {
         let label = UILabel()
         label.text = "Driven"
         label.textAlignment = .center
-        label.textColor = .black
+        if #available(iOS 13.0, *) {
+            label.textColor = .label
+        } else {
+            label.textColor = .black
+        }
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -33,7 +42,11 @@ class PlaceMenuBar: UIView {
         let label = UILabel()
         label.text = "Miles Driven"
         label.textAlignment = .center
-        label.textColor = .black
+        if #available(iOS 13.0, *) {
+            label.textColor = .label
+        } else {
+            label.textColor = .black
+        }
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -42,7 +55,11 @@ class PlaceMenuBar: UIView {
         let label = UILabel()
         label.text = "Logged"
         label.textAlignment = .center
-        label.textColor = .black
+        if #available(iOS 13.0, *) {
+            label.textColor = .label
+        } else {
+            label.textColor = .black
+        }
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()

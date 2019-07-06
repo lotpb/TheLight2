@@ -8,7 +8,7 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
 
 class SalesmanVC: UIViewController {
     
@@ -48,7 +48,6 @@ class SalesmanVC: UIViewController {
         self.extendedLayoutIncludesOpaqueBars = true
 
         setupNavigation()
-        setupSearch()
         loadData()
         setupTableView()
         self.tableView!.addSubview(self.refreshControl)
@@ -84,36 +83,30 @@ class SalesmanVC: UIViewController {
         self.tabBarController?.tabBar.isHidden = true
     }
     
-    private func setupSearch() {
+    private func setupNavigation() {
+        
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newData))
+        navigationItem.title = "Salesman"
+        //self.navigationItem.largeTitleDisplayMode = .always
         
         searchController = UISearchController(searchResultsController: resultsController)
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.scopeButtonTitles = searchScope
+        searchController.searchBar.sizeToFit()
+        searchController.obscuresBackgroundDuringPresentation = false
+        
         if let textfield = searchController.searchBar.value(forKey: "searchField") as? UITextField {
             if let backgroundview = textfield.subviews.first {
-                backgroundview.backgroundColor = UIColor.white
+                backgroundview.backgroundColor = .white
                 backgroundview.layer.cornerRadius = 10
                 backgroundview.clipsToBounds = true
             }
         }
-        searchController.searchBar.scopeButtonTitles = searchScope
-        searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = false
+        
         self.definesPresentationContext = true
-        
-        if #available(iOS 11.0, *) {
-            self.navigationItem.searchController = searchController
-            navigationItem.hidesSearchBarWhenScrolling = false
-        } else {
-            tableView?.tableHeaderView = searchController.searchBar
-        }
-    }
-    
-    private func setupNavigation() {
-        navigationItem.title = "Salesman"
-        self.navigationItem.largeTitleDisplayMode = .always
-        
-        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newData))
-        //let searchButton = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchButton))
-        navigationItem.rightBarButtonItems = [addButton]
     }
     
     func setupTableView() {
@@ -128,8 +121,8 @@ class SalesmanVC: UIViewController {
         self.tableView!.tableFooterView = UIView(frame: .zero)
 
         resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
-        //resultsController.tableView.backgroundColor = Color.LGrayColor
-        //resultsController.tableView.tableFooterView = UIView(frame: .zero)
+        resultsController.tableView.backgroundColor = Color.LGrayColor
+        resultsController.tableView.tableFooterView = UIView(frame: .zero)
         resultsController.tableView.sizeToFit()
         resultsController.tableView.clipsToBounds = true
         resultsController.tableView.dataSource = self
@@ -138,7 +131,7 @@ class SalesmanVC: UIViewController {
     
     // MARK: - NavigationController Hidden
     @objc func hideBar(notification: NSNotification)  {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {
@@ -212,6 +205,9 @@ class SalesmanVC: UIViewController {
                 let salesTxt = SalesModel(dictionary: dictionary)
                 self.saleslist.append(salesTxt)
                 
+                self.saleslist.sort(by: { (p1, p2) -> Bool in
+                    return p1.salesman.compare(p2.salesman) == .orderedAscending
+                })
                 DispatchQueue.main.async(execute: {
                     self.tableView?.reloadData()
                 })
@@ -342,7 +338,7 @@ extension SalesmanVC: UITableViewDataSource {
         if (defaults.bool(forKey: "parsedataKey")) {
             
             let imageObject = _feedItems.object(at: indexPath.row) as? PFObject
-            if let imageFile = imageObject!.object(forKey: "imageFile") as? PFFile {
+            if let imageFile = imageObject!.object(forKey: "imageFile") as? PFFileObject {
                 imageFile.getDataInBackground { imageData, error in
                     self.selectedImage = UIImage(data: imageData!)
                 }
@@ -384,7 +380,7 @@ extension SalesmanVC: UITableViewDataSource {
             cell.customImagelabel.text = "Sale"
             cell.customImagelabel.tag = indexPath.row
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 cell.salestitleLabel!.font = Font.celltitle22m
             } else {
                 cell.salestitleLabel!.font = Font.celltitle20l
@@ -394,7 +390,7 @@ extension SalesmanVC: UITableViewDataSource {
                 
                 cell.salestitleLabel!.text = (_feedItems[indexPath.row] as AnyObject).value(forKey: "Salesman") as? String
                 let imageObject = _feedItems.object(at: indexPath.row) as! PFObject
-                let imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                let imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     UIView.transition(with: (cell.customImageView), duration: 0.5, options: .transitionCrossDissolve, animations: {
                         cell.customImageView.image = UIImage(data: imageData!) ?? UIImage(named: "profile-rabbit-toy")
@@ -430,7 +426,7 @@ extension SalesmanVC: UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
         if (tableView == self.tableView) {
-            if UI_USER_INTERFACE_IDIOM() == .phone {
+            if UIDevice.current.userInterfaceIdiom == .phone  {
                 return 85.0
             } else {
                 return CGFloat.leastNormalMagnitude

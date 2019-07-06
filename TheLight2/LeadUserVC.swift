@@ -140,9 +140,9 @@ class LeadUserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier) as! TableViewCell
         
         cell.selectionStyle = .none
-        cell.blogsubtitleLabel!.textColor = .gray
+        cell.blogsubtitleLabel!.textColor = .systemGray
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.blogtitleLabel!.font = Font.celltitle20r
             cell.blogsubtitleLabel!.font = Font.celltitle18r
             cell.blogmsgDateLabel!.font = Font.celltitle16r
@@ -272,7 +272,7 @@ class LeadUserVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         let myLabel5:UILabel = UILabel(frame: .init(x: 10, y: 105, width: self.tableView!.frame.size.width-20, height: 50))
         let myLabel6:UILabel = UILabel(frame: .init(x: 10, y: 140, width: self.tableView!.frame.size.width-20, height: 50))
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             myLabel4.font = Font.celltitle22m
             myLabel5.font = Font.celltitle18l
             myLabel6.font = Font.celltitle18r

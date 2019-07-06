@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import Firebase
+import FirebaseDatabase
 import CoreLocation
 
 struct FirebaseRef {

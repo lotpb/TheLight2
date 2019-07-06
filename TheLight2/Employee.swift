@@ -7,8 +7,9 @@
 //
 
 import UIKit
+//import SwiftUI
 import Parse
-import Firebase
+import FirebaseDatabase
 
 class Employee: UIViewController {
 
@@ -33,7 +34,7 @@ class Employee: UIViewController {
     
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
-        refreshControl.backgroundColor = Color.Employ.navColor
+        refreshControl.backgroundColor = .clear //Color.Employ.navColor
         refreshControl.tintColor = .white
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh", attributes: attributes)
@@ -46,7 +47,6 @@ class Employee: UIViewController {
         super.viewDidLoad()
         self.extendedLayoutIncludesOpaqueBars = true
         setupNavigation()
-        setupSearch()
         setupTableView()
         
         self.tableView!.addSubview(self.refreshControl)
@@ -66,7 +66,7 @@ class Employee: UIViewController {
         // MARK: NavigationController Hidden
         NotificationCenter.default.addObserver(self, selector: #selector(Employee.hideBar(notification:)), name: NSNotification.Name("hide"), object: nil)
 
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.navigationController?.navigationBar.barTintColor = .black
         } else {
             self.navigationController?.navigationBar.barTintColor = Color.Employ.navColor
@@ -85,34 +85,30 @@ class Employee: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    private func setupSearch() {
-        searchController = UISearchController(searchResultsController: resultsController)
-        if let textfield = searchController.searchBar.value(forKey: "searchField") as? UITextField {
-            if let backgroundview = textfield.subviews.first {
-                backgroundview.backgroundColor = UIColor.white
-                backgroundview.layer.cornerRadius = 10;
-                backgroundview.clipsToBounds = true;
-            }
-        }
-        searchController.searchBar.scopeButtonTitles = searchScope
-        searchController.searchResultsUpdater = self
-        self.definesPresentationContext = true
-        
-        if #available(iOS 11.0, *) {
-            self.navigationItem.searchController = searchController
-            navigationItem.hidesSearchBarWhenScrolling = false
-        } else {
-            tableView?.tableHeaderView = searchController.searchBar
-        }
-    }
-    
     private func setupNavigation() {
         
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newData))
         navigationItem.title = "Employee"
-        self.navigationItem.largeTitleDisplayMode = .always
+        //self.navigationItem.largeTitleDisplayMode = .always
         
-        let addBtn = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(newData))
-        navigationItem.rightBarButtonItems = [addBtn]
+        searchController = UISearchController(searchResultsController: resultsController)
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.scopeButtonTitles = searchScope
+        searchController.searchBar.sizeToFit()
+        searchController.obscuresBackgroundDuringPresentation = false
+        
+        if let textfield = searchController.searchBar.value(forKey: "searchField") as? UITextField {
+            if let backgroundview = textfield.subviews.first {
+                backgroundview.backgroundColor = .white
+                backgroundview.layer.cornerRadius = 10
+                backgroundview.clipsToBounds = true
+            }
+        }
+        
+        self.definesPresentationContext = true
     }
     
     func setupTableView() {
@@ -123,21 +119,26 @@ class Employee: UIViewController {
         self.tableView!.dataSource = self
         self.tableView!.sizeToFit()
         self.tableView!.clipsToBounds = true
-        self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            // Fallback on earlier versions
+            self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        }
         self.tableView!.tableFooterView = UIView(frame: .zero)
 
         resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
         resultsController.tableView.backgroundColor = Color.LGrayColor
-        resultsController.tableView.tableFooterView = UIView(frame: .zero)
         resultsController.tableView.sizeToFit()
         resultsController.tableView.clipsToBounds = true
         resultsController.tableView.dataSource = self
         resultsController.tableView.delegate = self
+        resultsController.tableView.tableFooterView = UIView(frame: .zero)
     }
     
     // MARK: - NavigationController Hidden
     @objc func hideBar(notification: NSNotification)  {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {
@@ -210,6 +211,9 @@ class Employee: UIViewController {
                 let employTxt = EmployModel(dictionary: dictionary)
                 self.employlist.append(employTxt)
                 
+                self.employlist.sort(by: { (p1, p2) -> Bool in
+                    return p1.lastname.compare(p2.lastname) == .orderedAscending
+                })
                 DispatchQueue.main.async(execute: {
                     self.tableView?.reloadData()
                 })
@@ -348,9 +352,9 @@ class Employee: UIViewController {
                 controller.tbl15 = employ.middle as NSString
                 controller.tbl21 = employ.email as NSString
                 controller.tbl22 = employ.department
-                controller.tbl23 = employ.country
+                controller.tbl23 = employ.title
                 controller.tbl24 = employ.manager
-                controller.tbl25 = employ.title
+                controller.tbl25 = employ.country
                 controller.tbl26 = employ.first as NSString
                 controller.tbl27 = employ.company
                 controller.custNo = employ.lastname
@@ -397,7 +401,7 @@ class Employee: UIViewController {
                     controller.address = employlist[indexPath!].address
                     controller.city = employlist[indexPath!].city
                     controller.state = employlist[indexPath!].state
-                    controller.amount = employlist[indexPath!].country
+                    controller.amount = employlist[indexPath!].title
                     controller.tbl11 = employlist[indexPath!].homephone
                     controller.tbl12 = employlist[indexPath!].workphone
                     controller.tbl13 = employlist[indexPath!].cellphone
@@ -405,9 +409,9 @@ class Employee: UIViewController {
                     controller.tbl15 = employlist[indexPath!].middle as NSString
                     controller.tbl21 = employlist[indexPath!].email as NSString
                     controller.tbl22 = employlist[indexPath!].department
-                    controller.tbl23 = employlist[indexPath!].country
+                    controller.tbl23 = employlist[indexPath!].title
                     controller.tbl24 = employlist[indexPath!].manager
-                    controller.tbl25 = employlist[indexPath!].title
+                    controller.tbl25 = employlist[indexPath!].country
                     controller.tbl26 = employlist[indexPath!].first as NSString
                     controller.tbl27 = employlist[indexPath!].company
                     controller.custNo = employlist[indexPath!].lastname
@@ -493,9 +497,9 @@ extension Employee: UITableViewDataSource {
             cellIdentifier = "Cell"
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! TableViewCell
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 
-                cell.employtitleLabel!.font = Font.celltitle22m
+                cell.employtitleLabel!.font = Font.celltitle20m
                 cell.employsubtitleLabel!.font = Font.celltitle16r
                 cell.employlikeLabel!.font = Font.celltitle16r
                 
@@ -507,7 +511,12 @@ extension Employee: UITableViewDataSource {
             }
             
             cell.selectionStyle = .none
-            cell.employsubtitleLabel!.textColor = .gray
+            if #available(iOS 13.0, *) {
+                cell.employtitleLabel.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
+            cell.employsubtitleLabel!.textColor = .systemGray
             cell.employreplyButton.tintColor = .lightGray
             cell.employreplyButton.setImage(#imageLiteral(resourceName: "Commentfilled").withRenderingMode(.alwaysTemplate), for: .normal)
             cell.employreplyLabel.text! = ""
@@ -574,7 +583,7 @@ extension Employee: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
         if (tableView == self.tableView) {
-            if UI_USER_INTERFACE_IDIOM() == .phone {
+            if UIDevice.current.userInterfaceIdiom == .phone  {
                 return 85.0
             } else {
                 return CGFloat.leastNormalMagnitude

@@ -67,7 +67,7 @@ class GetAddress: UIViewController, UITableViewDelegate, UITableViewDataSource {
     private func setupNavigation() {
         
         navigationItem.title = "Locate Address"
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.navigationItem.largeTitleDisplayMode = .always
         } else {
             self.navigationItem.largeTitleDisplayMode = .never
@@ -86,7 +86,7 @@ class GetAddress: UIViewController, UITableViewDelegate, UITableViewDataSource {
     // MARK: - NavigationController Hidden
     
     @objc func hideBar(notification: NSNotification)  {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {
@@ -130,7 +130,7 @@ class GetAddress: UIViewController, UITableViewDelegate, UITableViewDataSource {
         cell.selectionStyle = .none
         cell.detailTextLabel!.textColor = .lightGray
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             
             cell.textLabel!.font = Font.celltitle22m
             cell.detailTextLabel!.font = Font.celltitle16r
@@ -147,7 +147,7 @@ class GetAddress: UIViewController, UITableViewDelegate, UITableViewDataSource {
                 //cell.textLabel!.font =  Font.celltitle22m
                 cell.detailTextLabel!.font =  Font.celltitle22m
                 cell.textLabel!.textColor = .red
-                cell.detailTextLabel!.textColor = .red
+                cell.detailTextLabel!.textColor = .systemRed
                 
                 cell.textLabel!.text = subThoroughfare! + " " + thoroughfare!
                 cell.detailTextLabel!.text = locality! + ", " + administrativeArea! + " " + postalCode!

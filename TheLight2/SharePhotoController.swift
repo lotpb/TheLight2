@@ -7,7 +7,9 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
+import FirebaseStorage
+import FirebaseAuth
 
 class SharePhotoController: UIViewController {
     
@@ -87,7 +89,7 @@ class SharePhotoController: UIViewController {
     
     let imageView: UIImageView = {
         let iv = UIImageView()
-        iv.backgroundColor = .red
+        iv.backgroundColor = .systemRed
         iv.contentMode = .scaleAspectFill
         iv.clipsToBounds = true
         return iv

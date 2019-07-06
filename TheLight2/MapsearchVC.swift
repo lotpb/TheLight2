@@ -28,7 +28,7 @@ class MapsearchVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegat
         button.backgroundColor = .white
         button.setTitle("+", for: .normal)
         button.setTitleColor(.lightGray, for: .normal)
-        button.titleEdgeInsets = .init(top: -10, left: 0, bottom: 0, right: 0)
+        button.titleEdgeInsets = .init(top: 0, left: 0, bottom: 0, right: 0)
         button.addTarget(self, action: #selector(maptype), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -45,7 +45,7 @@ class MapsearchVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegat
     
     private func floatButton() {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             buttonSize = 50
         } else {
             buttonSize = 50
@@ -73,8 +73,8 @@ class MapsearchVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegat
         mapView.delegate = self
         mapView.userTrackingMode = .follow
         
-        setupSearch()
         setupNavigation()
+        setupSearch()
         
         floatButton()
         setupConstraints()
@@ -89,9 +89,6 @@ class MapsearchVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegat
         
         self.tabBarController?.tabBar.isHidden = false
         locationAuthStatus()
-        
-        
-
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -118,82 +115,56 @@ class MapsearchVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegat
     }
     
     func setupSearch() {
-        //self.becomeFirstResponder()
-        //Tap gesture to return to mapView when tapped on screen
-        let singleTap = UITapGestureRecognizer(target:self, action:#selector(self.handleSingleTap(gesture:)))
-        singleTap.numberOfTouchesRequired = 1
-        singleTap.addTarget(self, action:#selector(self.handleSingleTap(gesture:)))
-        mapView.isUserInteractionEnabled = true
-        mapView.addGestureRecognizer(singleTap)
-        
+
         let locationSearchTable = storyboard!.instantiateViewController(withIdentifier: "LocationSearchTable") as! LocationSearchTable
-        if let textfield = searchController?.searchBar.value(forKey: "searchField") as? UITextField {
-            if let backgroundview = textfield.subviews.first {
-                backgroundview.backgroundColor = UIColor.white
-                backgroundview.layer.cornerRadius = 10
-                backgroundview.clipsToBounds = true
-            }
-        }
         resultSearchController = UISearchController(searchResultsController: locationSearchTable)
+        navigationItem.searchController = resultSearchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        navigationItem.hidesBackButton = true
         resultSearchController?.searchResultsUpdater = locationSearchTable
-
-        //let searchBar = resultSearchController?.searchBar
-        //searchBar?.autoresizingMask = [.flexibleWidth]
-        //searchBar?.sizeToFit()
-        //searchBar?.enablesReturnKeyAutomatically = true
-        //searchBar?.searchBarStyle = .minimal //makes black background
-        //searchBar.setShowsCancelButton(true, animated: true)
-        //searchBar?.placeholder = "Search for places"
-        //navigationItem.titleView = resultSearchController?.searchBar
-        self.navigationController?.navigationBar.topItem?.searchController = resultSearchController
-        //navigationItem.searchController = resultSearchController
-        
-        if #available(iOS 11.0, *) {
-            navigationItem.titleView = resultSearchController?.searchBar
-            //self.navigationItem.searchController = resultSearchController
-            navigationItem.hidesSearchBarWhenScrolling = false
-        } else {
-            navigationItem.titleView = nil //resultSearchController?.searchBar
-        }
-
-        //resultSearchController?.loadViewIfNeeded()
-        
-        definesPresentationContext = true
+        resultSearchController?.searchBar.placeholder = "Search for places"
         resultSearchController?.searchBar.isUserInteractionEnabled = true
         resultSearchController?.hidesNavigationBarDuringPresentation = false
         resultSearchController?.obscuresBackgroundDuringPresentation = false
+        resultSearchController?.searchBar.returnKeyType = UIReturnKeyType.done
+        resultSearchController?.loadViewIfNeeded()
+        definesPresentationContext = true
         
         locationSearchTable.mapView = mapView
         locationSearchTable.handleMapSearchDelegate = self
-        
-        //resultSearchController?.searchBar.returnKeyType = UIReturnKeyType.done
-        //navigationItem.hidesBackButton = true
-        //self.edgesForExtendedLayout = .bottom        
     }
     
     func setupNavigation() {
 
-        navigationItem.title = "Search Places"
-        self.navigationItem.largeTitleDisplayMode = .always
+        navigationController?.navigationBar.prefersLargeTitles = true
+        let backItem = UIBarButtonItem(title: "back", style: .plain, target: self, action: #selector(setbackButton))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: nil)
+        navigationItem.leftBarButtonItems = [backItem]
+        navigationItem.title = "Places"
     }
     
     func setupConstraints() {
 
-        self.view.addSubview(floatingBtn)
-        self.view.addSubview(floatingZoomBtn)
+        view.addSubview(floatingBtn)
+        view.addSubview(floatingZoomBtn)
         
         let guide = view.safeAreaLayoutGuide
         NSLayoutConstraint.activate([
             floatingBtn.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 10),
-            floatingBtn.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -10),
+            floatingBtn.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -15),
             floatingBtn.widthAnchor.constraint(equalToConstant: buttonSize),
             floatingBtn.heightAnchor.constraint(equalToConstant: buttonSize),
             
             floatingZoomBtn.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 10),
-            floatingZoomBtn.bottomAnchor.constraint(equalTo: floatingBtn.topAnchor, constant: -25),
+            floatingZoomBtn.bottomAnchor.constraint(equalTo: floatingBtn.topAnchor, constant: -15),
             floatingZoomBtn.widthAnchor.constraint(equalToConstant: buttonSize),
             floatingZoomBtn.heightAnchor.constraint(equalToConstant: buttonSize)
             ])
+    }
+    
+    // MARK: - Button
+    @objc func setbackButton() {
+        dismiss(animated: true)
     }
     
     @objc func maptype() { //floatbutton
@@ -253,7 +224,7 @@ class MapsearchVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegat
         let reuseId = "pin"
         var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId) as? MKPinAnnotationView
         pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-        pinView?.pinTintColor = .orange
+        pinView?.pinTintColor = .systemOrange
         pinView?.canShowCallout = true
         pinView?.isDraggable = true
         let smallSquare = CGSize(width: 30, height: 30)
@@ -277,7 +248,7 @@ class MapsearchVC: UIViewController, MKMapViewDelegate, CLLocationManagerDelegat
     /// MARK: - NavigationController Hidden
     
     @objc func hideBar(notification: NSNotification)  {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {

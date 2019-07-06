@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
 import Parse
 import EventKit
 import MobileCoreServices
@@ -55,7 +55,7 @@ class SnapshotVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var _feedItems5 = NSMutableArray() //employee
     var _feedItems6 = NSMutableArray() //blog
     var imageObject: PFObject!
-    var imageFile: PFFile!
+    var imageFile: PFFileObject!
     
     var selectedImage : UIImage!
 
@@ -97,7 +97,6 @@ class SnapshotVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var calendar: EKCalendar!
     var events: [EKEvent]?
     
-    
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
         refreshControl.backgroundColor = .clear
@@ -119,7 +118,7 @@ class SnapshotVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         loadEvents()
         loadData()
         setupTableView()
-        setupNavBar()
+        setupNavigation()
         self.tableView.addSubview(self.refreshControl)
     }
     
@@ -158,34 +157,38 @@ class SnapshotVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         // Dispose of any resources that can be recreated.
     }
     
+    func setupNavigation() {
+        navigationController?.navigationBar.prefersLargeTitles = true
+        //let searchBtn = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchButton))
+        //self.navigationItem.rightBarButtonItems = [searchBtn]
+        self.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
+        self.navigationItem.leftItemsSupplementBackButton = true
+        if UIDevice.current.userInterfaceIdiom == .pad  {
+            navigationItem.title = "TheLight Software - Snapshot"
+        } else {
+            navigationItem.title = "Snapshot"
+        }
+    }
+    
     func setupTableView() {
         self.tableView.delegate = self
         self.tableView.dataSource = self
-        self.tableView.backgroundColor = Color.Snap.tablebackColor
+        if #available(iOS 13.0, *) {
+            self.tableView.backgroundColor = .systemGroupedBackground //Color.Snap.tablebackColor
+        } else {
+            // Fallback on earlier versions
+        }
         self.tableView.separatorColor = Color.Snap.lineColor //.clear
         self.tableView.separatorInset = .init(top: 0, left: 5, bottom: 0, right: 5) // .zero
-        self.tableView.estimatedRowHeight = 100
+        //self.tableView.estimatedRowHeight = 100
+        self.tableView!.tableFooterView = UIView(frame: .zero)
         
         resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
         resultsController.tableView.sizeToFit()
         resultsController.tableView.clipsToBounds = true
         resultsController.tableView.dataSource = self
         resultsController.tableView.delegate = self
-    }
-    
-    func setupNavBar() {
-        
-        if UI_USER_INTERFACE_IDIOM() == .pad {
-            navigationItem.title = "TheLight Software - Snapshot"
-        } else {
-            navigationItem.title = "Snapshot"
-        }
-        self.navigationItem.largeTitleDisplayMode = .always
-        
-        //let searchBtn = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchButton))
-        //self.navigationItem.rightBarButtonItems = [searchBtn]
-        self.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
-        self.navigationItem.leftItemsSupplementBackButton = true
+        resultsController.tableView.tableFooterView = UIView(frame: .zero)
     }
     
     // MARK: - NavigationController Hidden
@@ -442,7 +445,7 @@ class SnapshotVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             case 0:
                 return 44
             case 1:
-                if UI_USER_INTERFACE_IDIOM() == .pad {
+                if UIDevice.current.userInterfaceIdiom == .pad  {
                     return 190
                 } else {
                     return result
@@ -572,28 +575,42 @@ class SnapshotVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         
         cell.collectionView.delegate =  nil
         cell.collectionView.dataSource = nil
-        cell.collectionView.backgroundColor = Color.Snap.collectbackColor
+        if #available(iOS 13.0, *) {
+            cell.collectionView.backgroundColor = .systemBackground
+        } else {
+            cell.collectionView.backgroundColor = Color.Snap.collectbackColor
+        }
         
         cell.customImagelabel.backgroundColor = .clear //fixed
         cell.customImageView.layer.borderColor = UIColor.clear.cgColor //fixed
         
-        cell.backgroundColor = Color.Snap.collectbackColor
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor =  .systemBackground
+        } else {
+            cell.backgroundColor = Color.Snap.collectbackColor
+        }
         cell.accessoryType = .none
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.textLabel!.font = Font.celltitle26r
             cell.snaptitleLabel.font = Font.celltitle20r
             cell.snapdetailLabel.font = Font.celltitle20r
             
         } else {
-            cell.textLabel!.font = Font.celltitle20r
+            cell.textLabel!.font = Font.celltitle18r
             cell.snaptitleLabel.font = Font.celltitle16r
             cell.snapdetailLabel.font = Font.celltitle18r
         }
         
-        cell.textLabel!.textColor = Color.Snap.textColor
-        cell.snaptitleLabel?.textColor = Color.Snap.textColor1
-        cell.snapdetailLabel?.textColor = Color.Snap.textColor
+        if #available(iOS 13.0, *) {
+            cell.textLabel!.textColor = .red
+            cell.snapdetailLabel?.textColor = .label
+            cell.snaptitleLabel?.textColor = .systemGray //Color.Snap.textColor1
+        } else {
+            cell.textLabel!.textColor = Color.Snap.textColor
+            cell.snapdetailLabel?.textColor = Color.Snap.textColor
+            cell.snaptitleLabel?.textColor = Color.Snap.textColor1
+        }
         
         cell.textLabel?.text = ""
 
@@ -633,6 +650,11 @@ class SnapshotVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             } else if (indexPath.row == 2) {
                 cell.accessoryType = .disclosureIndicator
                 cell.textLabel!.font = Font.Snapshot.cellgallery
+                if #available(iOS 13.0, *) {
+                    cell.textLabel!.textColor = .systemGray
+                } else {
+                    // Fallback on earlier versions
+                }
                 cell.textLabel!.text = "See the full gallery"
                 cell.collectionView.reloadData()
                 return cell
@@ -648,7 +670,7 @@ class SnapshotVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     cell.textLabel!.text = String(format: "%@%d", "Top Jobs ", joblist.count)
                 }
                 
-                //cell.selectionStyle = .gray
+                //cell.selectionStyle = .systemGray
                 cell.accessoryType = .disclosureIndicator
                 cell.collectionView.reloadData()
                 return cell
@@ -665,6 +687,11 @@ class SnapshotVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 
                 cell.accessoryType = .disclosureIndicator
                 cell.textLabel!.font = Font.Snapshot.cellgallery
+                if #available(iOS 13.0, *) {
+                    cell.textLabel!.textColor = .systemGray
+                } else {
+                    // Fallback on earlier versions
+                }
                 cell.textLabel!.text = "See the full gallery"
                 cell.collectionView.reloadData()
                 return cell
@@ -988,16 +1015,26 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! CollectionViewCell   
         
-        cell.backgroundColor = Color.Snap.collectbackColor
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor = .systemGray
+        } else {
+            cell.backgroundColor = .black //Color.Snap.collectbackColor
+        }
 
-        if (UI_USER_INTERFACE_IDIOM() == .pad) && (collectionView.tag == 0) {
+        if (UIDevice.current.userInterfaceIdiom == .pad) && (collectionView.tag == 0) {
             myLabel1 = UILabel(frame: .init(x: 0, y: 160, width: cell.bounds.size.width, height: 20))
         } else {
             myLabel1 = UILabel(frame: .init(x: 0, y: 110, width: cell.bounds.size.width, height: 20))
         }
         myLabel1.font = Font.Snapshot.cellLabel
-        myLabel1.backgroundColor = Color.Snap.collectbackColor
-        myLabel1.textColor = Color.Snap.textColor
+        if #available(iOS 13.0, *) {
+            myLabel1.backgroundColor = .systemBackground
+            myLabel1.textColor = .label
+        } else {
+            myLabel1.backgroundColor = Color.Snap.collectbackColor
+            myLabel1.textColor = Color.Snap.textColor
+        }
+        
         myLabel1.textAlignment = .center
         myLabel1.clipsToBounds = true
 
@@ -1011,7 +1048,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedNews.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     
                     guard let imageData = imageData else {return}
@@ -1068,7 +1105,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedJob.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     guard let imageData = imageData else {return}
                     DispatchQueue.main.async {
@@ -1097,7 +1134,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedUser.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     guard let imageData = imageData else {return}
                     DispatchQueue.main.async {
@@ -1125,7 +1162,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedSales.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     guard let imageData = imageData else {return}
                     DispatchQueue.main.async {
@@ -1154,7 +1191,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedItems5.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     guard let imageData = imageData else {return}
                     DispatchQueue.main.async {
@@ -1182,7 +1219,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if (collectionView.tag == 0) {
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 return .init(width: 250, height: 180) //w150 h130
             } else {
                 return .init(width: 190, height: 130)
@@ -1202,7 +1239,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedNews.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     
                     let imageDetailurl = self.imageFile.url
@@ -1238,7 +1275,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedJob.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     
                     self.selectedImage = UIImage(data: imageData!)
@@ -1254,7 +1291,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedUser.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     
                     self.selectedImage = UIImage(data: imageData!)
@@ -1279,7 +1316,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedSales.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     
                     self.selectedImage = UIImage(data: imageData!)
@@ -1298,7 +1335,7 @@ extension SnapshotVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if (defaults.bool(forKey: "parsedataKey")) {
                 
                 imageObject = _feedItems5.object(at: indexPath.row) as? PFObject
-                imageFile = imageObject.object(forKey: "imageFile") as? PFFile
+                imageFile = imageObject.object(forKey: "imageFile") as? PFFileObject
                 imageFile!.getDataInBackground { imageData, error in
                     
                     self.selectedObjectId = (self._feedItems5[indexPath.row] as AnyObject).value(forKey: "objectId") as? String

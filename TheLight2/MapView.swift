@@ -55,7 +55,7 @@ class MapView: UIViewController {
     let speechSynthesizer = AVSpeechSynthesizer()
     
     var activityIndicator: UIActivityIndicatorView = {
-        let aiv = UIActivityIndicatorView(style: .whiteLarge)
+        let aiv = UIActivityIndicatorView(style: .medium)
         aiv.hidesWhenStopped = true
         return aiv
     }()
@@ -99,7 +99,7 @@ class MapView: UIViewController {
     
     private func floatButton() {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             buttonSize = 50
         } else {
             buttonSize = 40
@@ -194,7 +194,7 @@ class MapView: UIViewController {
         self.mapView.isZoomEnabled = true
         self.mapView.isScrollEnabled = true
         self.mapView.isRotateEnabled = true
-        self.mapView.showsPointsOfInterest = true
+        //self.mapViewshowsPointsOfInterest = true
         self.mapView.showsCompass = true
         self.mapView.showsScale = true
         if !(self.formController == "MileIQ") {
@@ -219,7 +219,7 @@ class MapView: UIViewController {
     
     // MARK: - NavigationController Hidden
     @objc func hideBar(notification: NSNotification)  {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {
@@ -245,7 +245,7 @@ class MapView: UIViewController {
     // MARK: - Button
     @objc func routehideView(_ sender: AnyObject) {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             routeviewHeight = 350
         } else {
             routeviewHeight = 220
@@ -512,7 +512,7 @@ class MapView: UIViewController {
         activityIndicator = UIActivityIndicatorView(frame: UIScreen.main.bounds)
         activityIndicator.autoresizingMask = [.flexibleWidth, .flexibleHeight, .flexibleBottomMargin, .flexibleRightMargin, .flexibleLeftMargin, .flexibleTopMargin]
         activityIndicator.hidesWhenStopped = true
-        activityIndicator.style = .whiteLarge
+        activityIndicator.style = .medium
         activityIndicator.backgroundColor = UIColor(hue: 0/360, saturation: 0/100, brightness: 0/100, alpha: 0.4)
         view.addSubview(activityIndicator)
         activityIndicator.startAnimating()
@@ -571,9 +571,9 @@ class MapView: UIViewController {
         pinView.leftCalloutAccessoryView = button
         
         if annotation.title == "Start" {
-            pinView.pinTintColor = .green
+            pinView.pinTintColor = .systemGreen
         } else {
-            pinView.pinTintColor = .red
+            pinView.pinTintColor = .systemRed
         }
         
         return pinView
@@ -794,14 +794,14 @@ extension MapView: MKMapViewDelegate {
         
         if overlay is MKPolyline {
             let renderer = MKPolylineRenderer(overlay: overlay)
-            renderer.strokeColor = Color.BlueColor //.blue
+            renderer.strokeColor = Color.BlueColor //.systemBlue
             renderer.lineWidth = 3
             return renderer
         }
         if overlay is MKCircle {
             let renderer = MKCircleRenderer(overlay: overlay)
-            renderer.strokeColor = .red
-            renderer.fillColor = .red
+            renderer.strokeColor = .systemRed
+            renderer.fillColor = .systemRed
             renderer.alpha = 0.5
             return renderer
         }

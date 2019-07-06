@@ -8,10 +8,13 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
 
 class EditData: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate {
 
+    @IBOutlet weak var contentView: UIView!
+    @IBOutlet weak var mainView: UIView!
     @IBOutlet weak var tableView: UITableView?
     @IBOutlet weak var first: UITextField!
     @IBOutlet weak var last: UITextField!
@@ -101,7 +104,19 @@ class EditData: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, 
         super.viewDidLoad()
         self.extendedLayoutIncludesOpaqueBars = true
 
+        if #available(iOS 13.0, *) {
+            //view?.backgroundColor = .systemGray6
+            contentView?.backgroundColor = .systemGray6
+            mainView?.backgroundColor = .clear
+            tableView?.backgroundColor = .clear
+        } else {
+            // Fallback on earlier versions
+        }
+        passFieldData()
+        setupTableView()
         setupNavigation()
+        setupForm()
+        clearFormData()
         
         if (status == "New") {
             self.frm30 = "1"
@@ -110,17 +125,13 @@ class EditData: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, 
         if (status == "Edit") {
             loadData()
         }
-        
-        setupForm()
-        clearFormData()
         //observeKeyboardNotifications() // Move Keyboard
-        setupTableView()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+
         
-        passFieldData()
         loadFormData()
         self.tabBarController?.tabBar.isHidden = false
     }
@@ -128,7 +139,7 @@ class EditData: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             self.navigationController?.navigationBar.barTintColor = .black
         } else {
             self.navigationController?.navigationBar.barTintColor = Color.DGrayColor
@@ -141,8 +152,8 @@ class EditData: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, 
          //Fix Grey Bar on Bpttom Bar
         if UIDevice.current.userInterfaceIdiom == .phone {
             if let con = self.splitViewController {
-                con.preferredDisplayMode = .primaryOverlay
-                //con.preferredDisplayMode = .allVisible
+                //con.preferredDisplayMode = .primaryOverlay //prpblem
+                con.preferredDisplayMode = .allVisible
             }
         }
     }
@@ -162,7 +173,7 @@ class EditData: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, 
     
     private func setupNavigation() {
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = String(format: "%@ %@", "TheLight Software - \(self.status!)", self.formController!)
         } else {
             navigationItem.title = String(format: "%@ %@", self.status!, self.formController!)
@@ -178,19 +189,35 @@ class EditData: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, 
         self.tableView!.delegate = self
         self.tableView!.dataSource = self
         self.tableView!.estimatedRowHeight = 44
-        //self.tableView!.rowHeight = UITableViewAutomaticDimension
-        self.tableView!.backgroundColor = .white
+        self.tableView!.rowHeight = UITableView.automaticDimension
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
         self.tableView!.tableFooterView = UIView(frame: .zero)
     }
     
     func setupForm() {
+        
+        self.first.autocapitalizationType = .words
+        if (self.formController == "Vendor") {
+            self.last.autocapitalizationType = .none
+        } else {
+            self.last.autocapitalizationType = .words
+        }
+        self.company.autocapitalizationType = .words
         
         self.pickerView.delegate = self
         self.pickerView.dataSource = self
         NotificationCenter.default.addObserver(self, selector: (#selector(EditData.updatePicker)), name: UITextField.textDidBeginEditingNotification, object: nil)
         
         profileImageView!.layer.cornerRadius = 32.0
-        profileImageView!.layer.borderColor = Color.Blog.borderColor.cgColor
+        if #available(iOS 13.0, *) {
+            profileImageView!.layer.borderColor = UIColor.systemBackground.cgColor
+        } else {
+            profileImageView!.layer.borderColor = UIColor.white.cgColor
+        }
         profileImageView!.layer.borderWidth = 2.0
         profileImageView!.layer.masksToBounds = true
     }
@@ -1231,15 +1258,18 @@ class EditData: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, 
                 }
             }
             
+            DispatchQueue.main.async {
+                self.navigationController?.popViewController(animated: true)
+                self.dismiss(animated: true)
+                
+                let storyboard = UIStoryboard(name: "Home", bundle: nil)
+                let vc = storyboard.instantiateViewController(withIdentifier: "homeId")
+                self.show(vc, sender: self)
+            }
+            
             let FeedbackGenerator = UINotificationFeedbackGenerator()
             FeedbackGenerator.notificationOccurred(.success)
             
-            navigationController!.popViewController(animated: true)
-            self.dismiss(animated: true)
-            
-            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-            let vc = storyboard.instantiateViewController(withIdentifier: "homeId")
-            self.show(vc, sender: self)
         }
     }
 }
@@ -1310,7 +1340,7 @@ extension EditData: UITableViewDataSource {
         
         aptframe = UITextField(frame: .init(x: 220, y: 7, width: 80, height: 30))
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             
             textframe = UITextField(frame:.init(x: 118, y: 7, width: 250, height: 30))
             textviewframe = UITextView(frame:.init(x: 118, y: 7, width: 250, height: 85))
@@ -1331,8 +1361,12 @@ extension EditData: UITableViewDataSource {
         
         textframe!.autocorrectionType = .no
         textframe!.clearButtonMode = .whileEditing
-        textframe!.autocapitalizationType = UITextAutocapitalizationType.words
-        textframe!.textColor = .black
+        textframe!.autocapitalizationType = .words
+        if #available(iOS 13.0, *) {
+            textframe!.textColor = .label
+        } else {
+            textframe!.textColor = .black
+        }
         
         self.comment?.autocorrectionType = .default
         self.callback?.clearButtonMode = .never
@@ -1603,7 +1637,7 @@ extension EditData: UITableViewDataSource {
                     simpleStepper.minimumValue = 0
                     simpleStepper.maximumValue = 10000
                     simpleStepper.stepValue = 100
-                    simpleStepper.tintColor = .gray
+                    simpleStepper.tintColor = .systemGray
                     cell.accessoryView = simpleStepper
                     simpleStepper.addTarget(self, action: #selector(EditData.stepperValueDidChange), for: .valueChanged)
                 }
@@ -1627,6 +1661,7 @@ extension EditData: UITableViewDataSource {
         } else if (indexPath.row == 11) {
             
             self.email = textframe
+            self.email.autocapitalizationType = .none
             self.email!.placeholder = "Email"
             if self.frm25 == nil {
                 self.email!.text = ""
@@ -1681,7 +1716,7 @@ extension EditData: UITableViewDataSource {
                 }
                 
                 simpleStepper.stepValue = 1
-                simpleStepper.tintColor = .gray
+                simpleStepper.tintColor = .systemGray
                 cell.accessoryView = simpleStepper
                 simpleStepper.addTarget(self, action: #selector(EditData.stepperValueDidChange), for: .valueChanged)
             }

@@ -46,7 +46,7 @@ class AccountCell: UICollectionViewCell, UITableViewDelegate, UITableViewDataSou
             query.cachePolicy = .cacheThenNetwork
             query.getFirstObjectInBackground { object, error in
                 if error == nil {
-                    if let imageFile = object!.object(forKey: "imageFile") as? PFFile {
+                    if let imageFile = object!.object(forKey: "imageFile") as? PFFileObject {
                         imageFile.getDataInBackground { imageData, error in
                             imageView.image = UIImage(data: imageData!)
                         }
@@ -180,7 +180,7 @@ class AccountCell: UICollectionViewCell, UITableViewDelegate, UITableViewDataSou
         cell.detailLabel.textColor = UIColor(white: 0.5, alpha: 1)
         self.tableView.separatorStyle = .none
         
-        if UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiom.pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             
             cell.titleLabel.font =  Font.celltitle16r
             cell.detailLabel.font =  Font.News.newslabel2
@@ -246,7 +246,11 @@ class AccountCell: UICollectionViewCell, UITableViewDelegate, UITableViewDataSou
             vw.layer.masksToBounds = true
             
             let myLabel1:UILabel = UILabel(frame: .init(x: 16, y: 12, width: 10, height: 20))
-            myLabel1.textColor = .black
+            if #available(iOS 13.0, *) {
+                myLabel1.textColor = .label
+            } else {
+                myLabel1.textColor = .black
+            }
             myLabel1.text = "Library (A-Z)"
             myLabel1.sizeToFit()
             //myLabel1.font = Font.headtitle
@@ -295,7 +299,7 @@ class AccountViewCell: UITableViewCell {
     let titleImage: UIImageView = {
         let imageView = UIImageView(image: #imageLiteral(resourceName: "taylor_swift_profile"))
         imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .yellow
+        imageView.backgroundColor = .systemYellow
         imageView.clipsToBounds = true
         return imageView
     }()

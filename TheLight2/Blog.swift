@@ -8,7 +8,8 @@
 
 import UIKit
 import Parse
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
 import Social
 
 final class Blog: UIViewController {
@@ -43,7 +44,7 @@ final class Blog: UIViewController {
 
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
-        refreshControl.backgroundColor = Color.twitterText
+        refreshControl.backgroundColor = .clear //Color.twitterText
         refreshControl.tintColor = .white
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh", attributes: attributes)
@@ -135,9 +136,12 @@ final class Blog: UIViewController {
         self.tableView!.rowHeight = UITableView.automaticDimension
         self.tableView!.sizeToFit()
         self.tableView!.clipsToBounds = true
-        self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        }
         self.tableView!.tableFooterView = UIView(frame: .zero)
-        //self.tableView.cellLayoutMarginsFollowReadableWidth = true
 
         resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
         resultsController.tableView.dataSource = self
@@ -150,7 +154,7 @@ final class Blog: UIViewController {
     
     // MARK: - NavigationController Hidden
     @objc func hideBar(notification: NSNotification)  {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone  {
             let state = notification.object as! Bool
             self.navigationController?.setNavigationBarHidden(state, animated: true)
             UIView.animate(withDuration: 0.2, animations: {
@@ -511,10 +515,18 @@ extension Blog: UITableViewDataSource {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as? TableViewCell else { fatalError("Unexpected Index Path") }
             
             cell.selectionStyle = .none
+            
+            if #available(iOS 13.0, *) {
+                cell.backgroundColor = .secondarySystemGroupedBackground
+                cell.blogtitleLabel.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
+            cell.blogmsgDateLabel?.textColor = .systemGray
             cell.blogsubtitleLabel?.textColor = Color.twitterText
             cell.customImagelabel.backgroundColor = .clear //fix
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 
                 cell.blogtitleLabel!.font =  Font.Blog.celltitlePad
                 cell.blogsubtitleLabel!.font =  Font.Blog.cellsubtitlePad
@@ -538,7 +550,7 @@ extension Blog: UITableViewDataSource {
                 query.cachePolicy = .cacheThenNetwork
                 query.getFirstObjectInBackground {(object: PFObject?, error: Error?) in
                     if error == nil {
-                        if let imageFile = object!.object(forKey: "imageFile") as? PFFile {
+                        if let imageFile = object!.object(forKey: "imageFile") as? PFFileObject {
                             imageFile.getDataInBackground { (imageData: Data?, error: Error?) in
                                 cell.customImageView.image = UIImage(data: imageData! as Data)
                             }
@@ -671,7 +683,7 @@ extension Blog: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
         if (tableView == self.tableView) {
-            if UI_USER_INTERFACE_IDIOM() == .phone {
+            if UIDevice.current.userInterfaceIdiom == .phone  {
                 return 85.0
             } else {
                 return CGFloat.leastNormalMagnitude
@@ -685,7 +697,7 @@ extension Blog: UITableViewDelegate {
         //if(section == 0) {
             if (tableView == self.tableView) {
                 
-                if UI_USER_INTERFACE_IDIOM() == .phone {
+                if UIDevice.current.userInterfaceIdiom == .phone  {
                     guard let header = tableView.dequeueReusableCell(withIdentifier: "Header") as? HeaderViewCell else { fatalError("Unexpected Index Path") }
                     
                     if (defaults.bool(forKey: "parsedataKey")) {

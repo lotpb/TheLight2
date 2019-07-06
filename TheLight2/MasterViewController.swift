@@ -7,7 +7,9 @@
 //
 
 import UIKit
-import Firebase
+import SwiftUI
+import FirebaseDatabase
+import FirebaseAuth
 import Parse
 import AVFoundation
 import FBSDKLoginKit
@@ -18,7 +20,6 @@ import FirebaseAnalytics
 
 class MasterViewController: UITableViewController, UISplitViewControllerDelegate {
 
-    weak var detailViewController: DetailViewVC? = nil
     let defaults = UserDefaults.standard
     
     //firebase
@@ -44,9 +45,14 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
     let myLabel1: UILabel = {
         let label = UILabel(frame: .init(x: 10, y: 10, width: 74, height: 74))
         label.numberOfLines = 2
-        label.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            label.backgroundColor = .white
+        } else {
+            // Fallback on earlier versions
+        }
         label.textColor = Color.goldColor
         label.textAlignment = .center
+        //label.font = .preferredFont(forTextStyle: .subheadline)
         label.font = Font.celltitle14m
         label.layer.cornerRadius = 37.0
         label.layer.borderColor = Color.Header.headtextColor.cgColor
@@ -59,7 +65,11 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
     let myLabel2: UILabel = {
         let label = UILabel(frame: .init(x: 110, y: 10, width: 74, height: 74))
         label.numberOfLines = 2
-        label.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            label.backgroundColor = .white
+        } else {
+            // Fallback on earlier versions
+        }
         label.textColor = Color.goldColor
         label.textAlignment = .center
         label.font = Font.celltitle14m
@@ -74,7 +84,11 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
     let myLabel3: UILabel = {
         let label = UILabel(frame: .init(x: 210, y: 10, width: 74, height: 74))
         label.numberOfLines = 2
-        label.backgroundColor = .white
+        if #available(iOS 13.0, *) {
+            label.backgroundColor = .white
+        } else {
+            // Fallback on earlier versions
+        }
         label.textColor = Color.goldColor
         label.textAlignment = .center
         label.font = Font.celltitle14m
@@ -97,7 +111,7 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
         let label = UILabel(frame: .init(x: 10, y: 85, width: 74, height: 20))
         label.numberOfLines = 1
         label.textAlignment = .center
-        label.textColor = .green
+        label.textColor = .systemGreen
         label.font = Font.celltitle14m
         label.isUserInteractionEnabled = true
         return label
@@ -123,19 +137,17 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
     
     lazy var separatorLine1: UIView = {
         let view = UIView(frame: .init(x: 10, y: 105, width: 74, height: 3.5))
-        view.backgroundColor = .green
+        view.backgroundColor = .systemGreen
         return view
     }()
     
     lazy var separatorLine2: UIView = {
         let view = UIView(frame: .init(x: 110, y: 105, width: 74, height: 3.5))
-        //view.backgroundColor = .green
         return view
     }()
     
     lazy var separatorLine3: UIView = {
         let view = UIView(frame: .init(x: 210, y: 105, width: 74, height: 3.5))
-        //view.backgroundColor = .green
         return view
     }()
     
@@ -149,7 +161,6 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
         self.splitViewController?.maximumPrimaryColumnWidth = 350
 
         setupNavigation()
-        setupSearch()
         setupTableView()
         versionCheck()
         speech()
@@ -173,7 +184,7 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
             }
         }
         
-        self.refreshControl?.backgroundColor = Color.Lead.navColor
+        self.refreshControl?.backgroundColor = .clear //Color.Lead.navColor
         self.refreshControl?.tintColor = .white
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         self.refreshControl?.attributedTitle = NSAttributedString(string: "Pull to refresh", attributes: attributes)
@@ -249,37 +260,22 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
         return true
     }
     
-    private func setupSearch() {
-
-        searchController = UISearchController(searchResultsController: resultsController)
-        if let textfield = searchController.searchBar.value(forKey: "searchField") as? UITextField {
-            if let backgroundview = textfield.subviews.first {
-                backgroundview.backgroundColor = UIColor.white
-                backgroundview.layer.cornerRadius = 10
-                backgroundview.clipsToBounds = true
-            }
-        }
-        searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = false
-        self.navigationController?.navigationBar.topItem?.searchController = searchController
-        
-        if #available(iOS 11.0, *) {
-            self.navigationItem.searchController = searchController
-            navigationItem.hidesSearchBarWhenScrolling = false
-        } else {
-            tableView?.tableHeaderView = searchController.searchBar
-        }
-        self.definesPresentationContext = true
-    }
-    
     func setupNavigation() {
-        navigationItem.title = "Main Menu"
-        navigationController?.navigationBar.prefersLargeTitles = true //must keep to work
-        self.navigationItem.largeTitleDisplayMode = .always
 
+        navigationController?.navigationBar.prefersLargeTitles = true
         let addBtn = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(self.actionButton))
         navigationItem.rightBarButtonItems = [addBtn]
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(self.handleLogout))
+        navigationItem.title = "Main Menu"
+        
+        searchController = UISearchController(searchResultsController: resultsController)
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.sizeToFit()
+        searchController.obscuresBackgroundDuringPresentation = false
+        
+        self.definesPresentationContext = true
     }
     
     func setupTableView() {
@@ -287,18 +283,27 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
         self.tableView!.dataSource = self
         self.tableView!.sizeToFit()
         self.tableView!.clipsToBounds = true
-        self.tableView!.backgroundColor = Color.LGrayColor //.black
         self.tableView!.tableFooterView = UIView(frame: .zero)
-
+        
         resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
-        resultsController.tableView.backgroundColor = Color.LGrayColor
-        resultsController.tableView.tableFooterView = UIView(frame: .zero)
+        resultsController.tableView.sizeToFit()
+        resultsController.tableView.clipsToBounds = true
         resultsController.tableView.dataSource = self
         resultsController.tableView.delegate = self
+        resultsController.tableView.tableFooterView = UIView(frame: .zero)
+        
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGroupedBackground
+            resultsController.tableView.backgroundColor = .systemGroupedBackground
+        } else {
+            self.tableView!.backgroundColor = Color.LGrayColor //.black
+            resultsController.tableView.backgroundColor = Color.LGrayColor
+        }
+        self.tableView!.tableFooterView = UIView(frame: .zero)
     }
     
     @objc func refreshData() {
-        if UI_USER_INTERFACE_IDIOM() == .phone {
+        if UIDevice.current.userInterfaceIdiom == .phone {
             self.updateYahoo()
         }
         self.tableView.reloadData()
@@ -431,13 +436,12 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
     
     // MARK: - Logout
     @objc func handleLogout(_ sender: Any) {
-        
         do {
             try Auth.auth().signOut()
             PFUser.logOut()
-            FBSDKLoginManager().logOut()
+            LoginManager().logOut()
             GIDSignIn.sharedInstance().signOut()
-            FBSDKAccessToken.setCurrent(nil)
+            AccessToken.current = nil
         } catch let error as NSError {
             print(error.localizedDescription)
         }
@@ -477,22 +481,24 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
         
         var cellIdentifier: String!
         
-        if tableView == self.tableView {
-            cellIdentifier = "Cell"
-        } else {
-            cellIdentifier = "UserFoundCell"
-        }
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
-        cell.selectionStyle = .none
-        
-        if UI_USER_INTERFACE_IDIOM() == .pad {
-            cell.textLabel!.font = Font.celltitle22m
-        } else {
-            cell.textLabel!.font = Font.celltitle20l
-        }
-        
         if (tableView == self.tableView) {
+            
+            cellIdentifier = "Cell"
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+            
+            cell.selectionStyle = .none
+            if #available(iOS 13.0, *) {
+                cell.backgroundColor = .secondarySystemGroupedBackground //.systemGroupedBackground
+                cell.textLabel?.textColor = .label
+            } else {
+                cell.backgroundColor = .white
+            }
+            
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                cell.textLabel!.font = Font.celltitle22m
+            } else {
+                cell.textLabel!.font = Font.celltitle20l
+            }
             
             if (indexPath.section == 0) {
                 
@@ -547,38 +553,44 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
                     cell.textLabel!.text = menuItems[18]
                 }
             }
+            return cell
             
         } else {
+            //search
+            cellIdentifier = "UserFoundCell"
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
             cell.textLabel!.text = self.filteredMenu[indexPath.row]
+            
+            return cell
         }
-        
-        return cell
     }
     
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
-        if (section == 0) {
-            if UI_USER_INTERFACE_IDIOM() == .phone {
-                return 145.0
-            } else {
-                return 0
+        if (tableView == self.tableView) {
+            if (section == 0) {
+                if UIDevice.current.userInterfaceIdiom == .phone {
+                    return 145.0
+                } else {
+                    return CGFloat.leastNormalMagnitude
+                }
+            } else if (section == 1) {
+                return 10
+            } else if (section == 2) {
+                return 10
+            } else if (section == 3) {
+                return 10
             }
-        } else if (section == 1) {
-            return 10
-        } else if (section == 2) {
-            return 10
-        } else if (section == 3) {
-            return 10
+            return 0
         }
-        return 0
+        return 0.0
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
         if (tableView == self.tableView) {
             if (section == 0) {
-                
-                if UI_USER_INTERFACE_IDIOM() == .phone {
-                    
+                if UIDevice.current.userInterfaceIdiom == .phone {
                     let vw = UIView()
                     vw.backgroundColor = .black
                     //tableView.tableHeaderView = vw
@@ -606,19 +618,19 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
                     vw.addSubview(myLabel35)
                     
                     if (myLabel25.text?.contains("-"))! {
-                        separatorLine2.backgroundColor = .red
-                        myLabel25.textColor = .red
+                        separatorLine2.backgroundColor = .systemRed
+                        myLabel25.textColor = .systemRed
                     } else {
-                        separatorLine2.backgroundColor = .green
-                        myLabel25.textColor = .green
+                        separatorLine2.backgroundColor = .systemGreen
+                        myLabel25.textColor = .systemGreen
                     }
                     
                     if (myLabel35.text?.contains("-"))! {
-                        separatorLine3.backgroundColor = .red
-                        myLabel35.textColor = .red
+                        separatorLine3.backgroundColor = .systemRed
+                        myLabel35.textColor = .systemRed
                     } else {
-                        separatorLine3.backgroundColor = .green
-                        myLabel35.textColor = .green
+                        separatorLine3.backgroundColor = .systemGreen
+                        myLabel35.textColor = .systemGreen
                     }
                     vw.addSubview(separatorLine1)
                     vw.addSubview(separatorLine2)
@@ -630,13 +642,13 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
                             textYQL!.contains("Snow") ||
                             textYQL!.contains("Thunderstorms") ||
                             textYQL!.contains("Showers")) {
-                            myLabel4.textColor = .red
+                            myLabel4.textColor = .systemRed
                         } else {
-                            myLabel4.textColor = .green
+                            myLabel4.textColor = .systemGreen
                         }
                     } else {
                         myLabel4.text = "Weather not available"
-                        myLabel4.textColor = .red
+                        myLabel4.textColor = .systemRed
                     }
                     vw.addSubview(myLabel4)
                     
@@ -649,12 +661,10 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
                      photoImage.addSubview(visualEffectView) */
                     
                     return vw
-                } else {
-                    return nil
                 }
-            } else {
-                return nil
+                //return nil
             }
+            //return nil
         }
         return nil
     }
@@ -731,7 +741,7 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
         }
         if segue.identifier == "searchMapSegue" {
             guard let controller = segue.destination as? MapsearchVC else { return }
-            navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+            //navigationItem.backBarButtonItem = UIBarButtonItem(title: "back", style: .plain, target: nil, action: nil)
             controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
             controller.navigationItem.leftItemsSupplementBackButton = true
         }
@@ -761,14 +771,30 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
             controller.navigationItem.leftItemsSupplementBackButton = true
         }
         if segue.identifier == "spotbeaconSegue" {
+            /*
+ 
+            if #available(iOS 13.0, *) {
+                let detailsView = DetailView()
+                let host = UIHostingController(rootView: detailsView)
+                navigationController?.pushViewController(host, animated: true)
+            } else { */
             guard let controller = segue.destination as? SpotBeaconVC else { return }
             controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
             controller.navigationItem.leftItemsSupplementBackButton = true
+           // }
         }
         if segue.identifier == "transmitbeaconSegue" {
-            guard let controller = segue.destination as? TransmitBeaconVC else { return }
-            controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
-            controller.navigationItem.leftItemsSupplementBackButton = true
+            /*
+ 
+            if #available(iOS 13.0, *) {
+                let detailsView = LabelView()
+                let host = UIHostingController(rootView: detailsView)
+                navigationController?.pushViewController(host, animated: true)
+            } else { */
+                guard let controller = segue.destination as? TransmitBeaconVC else { return }
+                controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
+                controller.navigationItem.leftItemsSupplementBackButton = true
+           // }
         }
         if segue.identifier == "contactSegue" {
             guard let controller = segue.destination as? ContactVC else { return }

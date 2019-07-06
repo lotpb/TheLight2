@@ -8,7 +8,7 @@
 
 import UIKit
 import AVFoundation
-import Firebase
+import FirebaseDatabase
 import MapKit
 
 
@@ -40,7 +40,7 @@ class CollectionViewCell: UICollectionViewCell {
     }()
     
     var activityIndicator: UIActivityIndicatorView = {
-        let aiv = UIActivityIndicatorView(style: .whiteLarge)
+        let aiv = UIActivityIndicatorView(style: .medium)
         aiv.translatesAutoresizingMaskIntoConstraints = false
         aiv.hidesWhenStopped = true
         return aiv
@@ -82,7 +82,7 @@ class CollectionViewCell: UICollectionViewCell {
             playerLayer2?.frame = (snapImageView.bounds)
             snapImageView.layer.addSublayer(playerLayer2!)
             player2?.play()
-            activityIndicator = UIActivityIndicatorView(style: .whiteLarge)
+            activityIndicator = UIActivityIndicatorView(style: .medium)
             activityIndicator.startAnimating()
             playBtn.isHidden = true
             //videoCell.playButton.isHidden = true
@@ -160,7 +160,11 @@ class VideoCell: CollectionViewCell {
     let customImageView: CustomImageView = {
         let imageView = CustomImageView()
         imageView.isUserInteractionEnabled = true
-        imageView.backgroundColor = .black
+        if #available(iOS 13.0, *) {
+            imageView.backgroundColor = .systemGray6
+        } else {
+            imageView.backgroundColor = .black
+        }
         imageView.image = UIImage(named: "")
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
@@ -184,7 +188,6 @@ class VideoCell: CollectionViewCell {
         let label = UILabel()
         label.text = ""
         label.numberOfLines = 0
-        //label.backgroundColor = UIColor(red: 230/255, green: 230/255, blue: 230/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -193,7 +196,6 @@ class VideoCell: CollectionViewCell {
         let label = UILabel()
         label.text = ""
         label.textColor = .lightGray
-        //label.backgroundColor = UIColor(red: 230/255, green: 230/255, blue: 230/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -210,7 +212,7 @@ class VideoCell: CollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "10"
-        label.textColor = .blue
+        label.textColor = .systemBlue
         return label
     }()
     
@@ -240,7 +242,6 @@ class VideoCell: CollectionViewCell {
     
     lazy var buttonView: UIView = {
         let view = UIView()
-        //view.backgroundColor = UIColor(red: 230/255, green: 230/255, blue: 230/255, alpha: 1)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -324,7 +325,7 @@ class VideoCell: CollectionViewCell {
         buttonView.addSubview(uploadbylabel)
         addSubview(separatorView)
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             let width = 400
             let height = ((width) * 9 / 16) + 16
             

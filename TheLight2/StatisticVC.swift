@@ -7,6 +7,7 @@
 //
 
 import UIKit
+//import SwiftUI
 import Parse
 
 class StatisticVC: UIViewController, UITextFieldDelegate, UISplitViewControllerDelegate {
@@ -17,6 +18,7 @@ class StatisticVC: UIViewController, UITextFieldDelegate, UISplitViewControllerD
     // MARK: NavigationController Hidden
     var lastContentOffset: CGFloat = 0.0
     
+    @IBOutlet weak var contentView: UIView!
     private var searchController: UISearchController!
     private var resultsController: UITableViewController!
     private var filteredTitles = [String]()
@@ -60,7 +62,7 @@ class StatisticVC: UIViewController, UITextFieldDelegate, UISplitViewControllerD
     
     var myLabel2: UILabel = {
         let label = UILabel()
-        label.textColor = .green
+        label.textColor = .systemGreen
         label.textAlignment = .center
         label.text = "SALES"
         label.font = UIFont (name: "Avenir-Black", size: 16)
@@ -78,7 +80,7 @@ class StatisticVC: UIViewController, UITextFieldDelegate, UISplitViewControllerD
     
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
-        refreshControl.backgroundColor = Color.Stat.navColor
+        refreshControl.backgroundColor = .clear //Color.Stat.navColor
         refreshControl.tintColor = .white
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh", attributes: attributes)
@@ -93,6 +95,12 @@ class StatisticVC: UIViewController, UITextFieldDelegate, UISplitViewControllerD
         // FIXME: - remove bottom bar'
         self.splitViewController?.delegate = self
         self.splitViewController!.preferredDisplayMode = .allVisible
+        //view.backgroundColor = .red
+        if #available(iOS 13.0, *) {
+            self.contentView.backgroundColor = .systemGroupedBackground
+        } else {
+            // Fallback on earlier versions
+        }
         
         setupTableView()
         setupNavBar()
@@ -145,7 +153,7 @@ class StatisticVC: UIViewController, UITextFieldDelegate, UISplitViewControllerD
     }
  
     private func setupNavBar() {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight Software - Statistics"
         } else {
             navigationItem.title = "Statistics"
@@ -158,7 +166,11 @@ class StatisticVC: UIViewController, UITextFieldDelegate, UISplitViewControllerD
         self.tableView!.dataSource = self
         self.tableView!.sizeToFit()
         self.tableView!.clipsToBounds = true
-        self.tableView!.backgroundColor = Color.LGrayColor
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGroupedBackground
+        } else {
+            self.tableView!.backgroundColor = Color.LGrayColor
+        }
         self.tableView!.tableFooterView = UIView(frame: .zero)
     }
     
@@ -278,7 +290,17 @@ extension StatisticVC: UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifier, for: indexPath) as UITableViewCell? else { fatalError("Unexpected Index Path") }
         
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor = .systemGray6
+            cell.textLabel!.textColor = .systemBlue
+            cell.detailTextLabel!.textColor = .label
+        } else {
+            cell.textLabel!.textColor = .black
+            cell.detailTextLabel!.textColor = .black
+        }
+        
+        if UIDevice.current.userInterfaceIdiom == .pad {
             cell.textLabel!.font = Font.Stat.celltitlePad
             cell.detailTextLabel!.font = Font.Stat.celltitlePad
             label1 = UILabel(frame: .init(x: tableView.frame.width-195, y: 5, width: 100, height: 25))
@@ -294,8 +316,6 @@ extension StatisticVC: UITableViewDataSource {
         
         cell.selectionStyle = .none
         cell.accessoryType = .none
-        cell.textLabel!.textColor = .black
-        cell.detailTextLabel!.textColor = .black
         
         if (indexPath.section == 0) {
             
@@ -367,7 +387,7 @@ extension StatisticVC: UITableViewDataSource {
                     cell.textLabel!.text = "\(dayYQL[0])"
                     cell.detailTextLabel!.text = "\(textYQL[0])"
                 } else {
-                    cell.textLabel!.text = "Day1"
+                    cell.textLabel!.text = "Day 1"
                     cell.detailTextLabel!.text = "Not Available"
                 }
                 return cell
@@ -377,7 +397,7 @@ extension StatisticVC: UITableViewDataSource {
                     cell.textLabel!.text = "\(dayYQL[1])"
                     cell.detailTextLabel!.text = "\(textYQL[1])"
                 } else {
-                    cell.textLabel!.text = "Day2"
+                    cell.textLabel!.text = "Day 2"
                     cell.detailTextLabel!.text = "Not Available"
                 }
                 return cell
@@ -387,7 +407,7 @@ extension StatisticVC: UITableViewDataSource {
                     cell.textLabel!.text = "\(dayYQL[2])"
                     cell.detailTextLabel!.text = "\(textYQL[2])"
                 } else {
-                    cell.textLabel!.text = "Day3"
+                    cell.textLabel!.text = "Day 3"
                     cell.detailTextLabel!.text = "Not Available"
                 }
                 return cell
@@ -397,7 +417,7 @@ extension StatisticVC: UITableViewDataSource {
                     cell.textLabel!.text = "\(dayYQL[3])"
                     cell.detailTextLabel!.text = "\(textYQL[3])"
                 } else {
-                    cell.textLabel!.text = "Day4"
+                    cell.textLabel!.text = "Day 4"
                     cell.detailTextLabel!.text = "Not Available"
                 }
                 return cell
@@ -406,7 +426,7 @@ extension StatisticVC: UITableViewDataSource {
                     cell.textLabel!.text = "\(dayYQL[4])"
                     cell.detailTextLabel!.text = "\(textYQL[4])"
                 } else {
-                    cell.textLabel!.text = "Day5"
+                    cell.textLabel!.text = "Day 5"
                     cell.detailTextLabel!.text = "Not Available"
                 }
                 return cell
@@ -422,7 +442,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[0] ?? "0")"
                 label1.text = "\(tradeYQL?[0] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }
@@ -437,7 +457,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[1] ?? "0")"
                 label1.text = "\(tradeYQL?[1] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }
@@ -452,7 +472,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[2] ?? "0")"
                 label1.text = "\(tradeYQL?[2] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }
@@ -467,7 +487,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[3] ?? "0")"
                 label1.text = "\(tradeYQL?[3] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }
@@ -482,7 +502,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[4] ?? "0")"
                 label1.text = "\(tradeYQL?[4] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }
@@ -497,7 +517,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[5] ?? "0")"
                 label1.text = "\(tradeYQL?[5] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }
@@ -512,7 +532,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[6] ?? "0")"
                 label1.text = "\(tradeYQL?[6] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }
@@ -527,7 +547,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[7] ?? "0")"
                 label1.text = "\(tradeYQL?[7] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }
@@ -542,7 +562,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[8] ?? "0")"
                 label1.text = "\(tradeYQL?[8] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }
@@ -557,7 +577,7 @@ extension StatisticVC: UITableViewDataSource {
                 label2.text = "\(changeYQL?[9] ?? "0")"
                 label1.text = "\(tradeYQL?[9] ?? "")"
                 if (label2.text?.contains("-"))! {
-                    label2.backgroundColor = .red
+                    label2.backgroundColor = .systemRed
                 } else {
                     label2.backgroundColor = Color.DGreenColor
                 }

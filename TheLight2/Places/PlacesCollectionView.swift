@@ -86,7 +86,11 @@ final class PlacesCollectionView: UICollectionViewController, UIGestureRecognize
         collectionView?.scrollIndicatorInsets = .init(top: 50,left: 0,bottom: 0,right: 0)
         collectionView?.alwaysBounceVertical = true
         
-        collectionView?.backgroundColor = Color.Mile.collectColor
+        if #available(iOS 13.0, *) {
+            collectionView?.backgroundColor = .secondarySystemGroupedBackground
+        } else {
+            collectionView?.backgroundColor = Color.Mile.collectColor
+        }
         collectionView?.register(PlaceFeedCell.self, forCellWithReuseIdentifier: cellId)
         //collectionView?.register(PlaceFooterCell.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: footerId)
     }
@@ -94,8 +98,12 @@ final class PlacesCollectionView: UICollectionViewController, UIGestureRecognize
     func setupNavigation() {
         
         navigationItem.title = "MileIQ"
-        navigationController?.navigationBar.barTintColor = .white
-        navigationController?.navigationBar.tintColor = .darkGray
+        if #available(iOS 13.0, *) {
+            navigationController?.navigationBar.barTintColor = .systemBackground
+        } else {
+            navigationController?.navigationBar.barTintColor = .white
+        }
+        navigationController?.navigationBar.tintColor = .systemGray
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.black]
         
         self.navigationItem.largeTitleDisplayMode = .never

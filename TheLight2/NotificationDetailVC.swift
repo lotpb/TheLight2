@@ -23,24 +23,9 @@ class NotificationDetailVC: UIViewController, UNUserNotificationCenterDelegate {
     var filteredString = NSMutableArray()
     var objects = [AnyObject]()
     
-    /*
-    lazy var titleButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.frame = .init(x: 0, y: 0, width: 100, height: 32)
-        if UI_USER_INTERFACE_IDIOM() == .pad {
-            button.setTitle("TheLight - Notifications", for: .normal)
-        } else {
-            button.setTitle("Notifications", for: .normal)
-        }
-        button.titleLabel?.font = Font.navlabel
-        button.titleLabel?.textAlignment = .center
-        button.setTitleColor(.white, for: .normal)
-        return button
-    }() */
-    
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
-        refreshControl.backgroundColor = .orange
+        refreshControl.backgroundColor = .clear
         refreshControl.tintColor = .white
         let attributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh", attributes: attributes)
@@ -51,23 +36,17 @@ class NotificationDetailVC: UIViewController, UNUserNotificationCenterDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        self.extendedLayoutIncludesOpaqueBars = true
         setupNavigationButtons()
         setupTableView()
-        //self.navigationItem.titleView = self.titleButton
-        if UI_USER_INTERFACE_IDIOM() == .pad {
-            navigationItem.title = "TheLight - Notifications"
-        } else {
-            navigationItem.title = "Notifications"
-        }
-        self.navigationItem.largeTitleDisplayMode = .always
+        
         self.tableView!.addSubview(self.refreshControl)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        self.navigationController?.navigationBar.barTintColor = .orange
+        //self.navigationController?.navigationBar.barTintColor = .systemOrange
     }
     
     override func didReceiveMemoryWarning() {
@@ -76,15 +55,27 @@ class NotificationDetailVC: UIViewController, UNUserNotificationCenterDelegate {
     }
     
     private func setupNavigationButtons() {
+        
+        navigationController?.navigationBar.prefersLargeTitles = true
         let trashButton = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(deleteButton))
         navigationItem.rightBarButtonItems = [trashButton]
+        if UIDevice.current.userInterfaceIdiom == .pad  {
+            navigationItem.title = "TheLight - Notifications"
+        } else {
+            navigationItem.title = "Notifications"
+        }
     }
     
     func setupTableView() {
         self.tableView!.delegate = self
         self.tableView!.dataSource = self
         self.tableView!.rowHeight = 85
-        self.tableView!.backgroundColor = Color.LGrayColor
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = Color.LGrayColor
+        }
+        self.tableView!.tableFooterView = UIView(frame: .zero)
     }
     
     // MARK: - refresh
@@ -117,9 +108,10 @@ extension NotificationDetailVC: UITableViewDataSource {
         let CellIdentifier: String = "Cell"
         let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifier)! as UITableViewCell
         
-        cell.textLabel!.textColor = .gray
+        cell.textLabel!.textColor = .systemGray
+        cell.detailTextLabel!.textColor = .systemGray
         
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             cell.textLabel!.font = ipadtitle
             cell.detailTextLabel!.font = ipadsubtitle
         } else {
@@ -144,7 +136,7 @@ extension NotificationDetailVC: UITableViewDelegate {
      func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
      
      let vw = UIView()
-     vw.backgroundColor = .orange
+     vw.backgroundColor = .systemOrange
      //tableView.tableHeaderView = vw
      
      return vw

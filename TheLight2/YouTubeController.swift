@@ -31,6 +31,8 @@ class YouTubeController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.extendedLayoutIncludesOpaqueBars = true
+        
         getChannelDetails(false)
         setupNavigation()
         //setupSearch()
@@ -80,29 +82,37 @@ class YouTubeController: UIViewController {
         } else {
             navigationItem.titleView = searchController?.searchBar
         }
-        
     }
     
     private func setupNavigation() {
-        if UI_USER_INTERFACE_IDIOM() == .pad {
+        navigationController?.navigationBar.prefersLargeTitles = true
+        if UIDevice.current.userInterfaceIdiom == .pad  {
             navigationItem.title = "TheLight - YouTube"
         } else {
             navigationItem.title = "YouTube"
         }
-        self.navigationItem.largeTitleDisplayMode = .always
     }
     
     func setupTableView() {
+        
         tableView.delegate = self
         tableView.dataSource = self
+        self.tableView!.sizeToFit()
+        self.tableView!.clipsToBounds = true
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        }
+        self.tableView!.tableFooterView = UIView(frame: .zero)
         
         resultsController.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UserFoundCell")
-        resultsController.tableView.backgroundColor = Color.LGrayColor
-        resultsController.tableView.tableFooterView = UIView(frame: .zero)
-        resultsController.tableView.sizeToFit()
-        resultsController.tableView.clipsToBounds = true
         resultsController.tableView.dataSource = self
         resultsController.tableView.delegate = self
+        resultsController.tableView.sizeToFit()
+        resultsController.tableView.clipsToBounds = true
+        resultsController.tableView.backgroundColor = Color.LGrayColor
+        resultsController.tableView.tableFooterView = UIView(frame: .zero)
     }
     
     // MARK: - IBAction method implementation
@@ -345,11 +355,19 @@ extension YouTubeController: UITableViewDataSource {
         if segDisplayedContent.selectedSegmentIndex == 0 {
             cell = tableView.dequeueReusableCell(withIdentifier: "idCellChannel", for: indexPath)
             
+            
             let channelTitleLabel = cell.viewWithTag(10) as! UILabel
             let channelDescriptionLabel = cell.viewWithTag(11) as! UILabel
             let thumbnailImageView = cell.viewWithTag(12) as! UIImageView
             
-            if UI_USER_INTERFACE_IDIOM() == .pad {
+            if #available(iOS 13.0, *) {
+                channelTitleLabel.textColor = .systemBlue
+                channelDescriptionLabel.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
+            
+            if UIDevice.current.userInterfaceIdiom == .pad  {
                 channelDescriptionLabel.font = Font.Snapshot.cellLabel
             }
             
@@ -364,8 +382,15 @@ extension YouTubeController: UITableViewDataSource {
             let videoTitle = cell.viewWithTag(10) as! UILabel
             let videoThumbnail = cell.viewWithTag(11) as! UIImageView
             
+            if #available(iOS 13.0, *) {
+                videoTitle.textColor = .label
+            } else {
+                // Fallback on earlier versions
+            }
+            
             let videoDetails = videosArray[indexPath.row] as NSDictionary
             videoTitle.text = videoDetails["title"] as? String
+            videoTitle.numberOfLines = 2
             videoThumbnail.image = UIImage(data: try! Data(contentsOf: URL(string: (videoDetails["thumbnail"] as? String)!)!))
         }
         
