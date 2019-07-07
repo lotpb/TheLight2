@@ -15,7 +15,6 @@ import GoogleSignIn
 import FBSDKLoginKit
 import UserNotifications
 import CoreLocation
-//import TwitterKit //geotify //import SwiftKeychainWrapper
 
 
 @UIApplicationMain
@@ -34,12 +33,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     let dateFormatter = DateFormatter()
     //journal
     static let geoCoder = CLGeocoder()
-    /*
-    var demoItems: [DemoItems] = [
-        DemoItems.beacon, DemoItems.locationOnce, DemoItems.locationUpdating, DemoItems.heading,
-        DemoItems.significantChange,DemoItems.visit
-    ]
-    var selectedLocationService: DemoItems = DemoItems.none */
     
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -121,8 +114,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
         /// MARK: - Google Sign-in
         GIDSignIn.sharedInstance().clientID = FirebaseApp.app()!.options.clientID
-        /// MARK: - Twitter Sign-in
-        //TWTRTwitter.sharedInstance().start(withConsumerKey:"hbgrlOXMyIalr90tDIsDlmrGl", consumerSecret:"hHVY3NFbW8PahFGVceiRb2WofvXeWua3uxh9eDw8WSKA3zrIjA")
         
         customizeAppearance()
         registerCategories()
@@ -138,8 +129,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
             locationManager.delegate = self
             locationManager.pausesLocationUpdatesAutomatically = true
             locationManager.allowsBackgroundLocationUpdates = true
-            //locationManager.distanceFilter = 35 // 0
-            //locationManager.desiredAccuracy = kCLLocationAccuracyBest
             locationManager.startUpdatingLocation()  // 2
         }
         
@@ -161,10 +150,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     /// MARK: - Google/Facebook
 
     internal func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        /*
-        if TWTRTwitter.sharedInstance().application(app, open: url, options: options) {
-            return true
-        } */
         
         let handled = ApplicationDelegate.shared.application(app, open: url, sourceApplication: options[.sourceApplication] as? String, annotation: options[.annotation])
         
@@ -176,7 +161,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     // MARK: - Facebook
 
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        
         AppEvents.activateApp()
         application.applicationIconBadgeNumber = 0
         center.removeAllPendingNotificationRequests()
@@ -285,10 +270,6 @@ extension AppDelegate {
     
     /// MARK: - App Theme Customization
     func customizeAppearance() {
-        /*
-        var preferredStatusBarStyle : UIStatusBarStyle {
-            return .lightContent
-        } */
         
         UINavigationBar.appearance().tintColor = .systemGray
         UINavigationBar.appearance().barTintColor = .black
