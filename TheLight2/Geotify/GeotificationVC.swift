@@ -282,7 +282,7 @@ class GeotificationVC: UIViewController, UISplitViewControllerDelegate, RegionsP
             let storyboard = UIStoryboard(name: "MileIQ", bundle: nil)
             let vc = storyboard.instantiateViewController(withIdentifier: "MileVC") as! PlacesCollectionView
             navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-            self.show(vc, sender: true)
+            self.present(vc, animated: true)
         default:
             break;
         }
