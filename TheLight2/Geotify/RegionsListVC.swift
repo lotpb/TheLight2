@@ -76,7 +76,11 @@ class RegionsListVC: UIViewController, UITableViewDataSource, UITableViewDelegat
         self.tableView!.dataSource = self
         self.tableView!.sizeToFit()
         self.tableView!.clipsToBounds = true
-        self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        if #available(iOS 13.0, *) {
+            self.tableView!.backgroundColor = .systemGray4
+        } else {
+            self.tableView!.backgroundColor = UIColor(white:0.90, alpha:1.0)
+        }
         self.tableView!.tableFooterView = UIView(frame: .zero)
     }
     
@@ -107,6 +111,13 @@ class RegionsListVC: UIViewController, UITableViewDataSource, UITableViewDelegat
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell:UITableViewCell! = tableView.dequeueReusableCell(withIdentifier: "regionCell")
+        
+        if #available(iOS 13.0, *) {
+            cell.backgroundColor = .secondarySystemGroupedBackground 
+            cell.textLabel?.textColor = .label
+        } else {
+            cell.backgroundColor = .white
+        }
         cell?.textLabel!.text = regions[indexPath.row]
         return cell
     }
