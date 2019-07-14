@@ -312,10 +312,10 @@ extension AppDelegate {
         }
         UIToolbar.appearance().isTranslucent = false
         
-        UISearchBar.appearance().barTintColor = .white
-        UISearchBar.appearance().tintColor = .white
+        //UISearchBar.appearance().barTintColor = .white
+        //UISearchBar.appearance().tintColor = .white
        // UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = [NSAttributedString.Key.foregroundColor.rawValue: UIColor.systemGray]
-        UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).textColor = UIColor.systemGray
+        //UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).textColor = UIColor.systemGray
 
     }
     
